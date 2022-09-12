@@ -17,6 +17,9 @@ class CreateUsersTable extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
+            $table->string('username')->unique(); 
+            //adding unique constraint at the database level (to ensure uniquness when modifying manually in db)
+            //to prevent user from insserting dirty values to db directly without validator (php level)
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();

@@ -1,7 +1,6 @@
 @extends('layouts.app')
-
 @section('content')
 <div class="container">
-    <welcome-component/>
-</div>
+    <create-post-component></create-post-component>
+ </div>
 @endsection

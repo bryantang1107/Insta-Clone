@@ -1,10 +1,15 @@
 <template>
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-md-8">
-        <div class="card">helloz</div>
-      </div>
-    </div>
+  <div
+    class="
+      container
+      d-flex
+      justify-content-center
+      align-items-center
+      flex-column
+    "
+  >
+    <h1>Welcome</h1>
+    <a href="/profile/1">Visit Profile</a>
   </div>
 </template>
 

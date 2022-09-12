@@ -1,7 +1,7 @@
 <?php
-
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\PostController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -33,4 +33,7 @@ Route::get('/lmao', function () {
 
 Auth::routes();
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+// Route::get('/home', [UserController::class, 'index'])->name('home');
+Route::get('/profile/{user}', [UserController::class, 'index'])->name('profile.show');
+
+Route::get('/p/create',[PostController::class, 'create'])->name('post.create');
