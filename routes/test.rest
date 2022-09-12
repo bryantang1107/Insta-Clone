@@ -1,0 +1,13 @@
+GET http://learnvuelaravel.test/api/test
+
+###
+POST http://learnvuelaravel.test/api/products
+
+###
+GET http://learnvuelaravel.test/api/products
+
+###
+GET http://learnvuelaravel.test/api/products/2
+
+###
+GET http://learnvuelaravel.test/api/products/search/
