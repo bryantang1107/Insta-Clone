@@ -21,8 +21,13 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [ 
-        //only the cols in the array can be filled (insertable value)
-        //other cols not mentioned cannot be filled during creation of row
+        //only the cols in the array can be mass assigned (mass assignment protection)
+        //we can use this to remove the fields that we dont want user to modify directly
+
+        //$guarded --> we only specify the guarded fields (the fields specified in this array will not be modified directly)
+        //if empty --> all fields are mass assignable
+
+
         //extra protection of db
         'name',
         'email',
@@ -61,8 +66,7 @@ class User extends Authenticatable
     //establish a relationship with posts
     //one to many (naming convention = plural)
     public function posts(){
-        return $this->hasMany(Post::class);
+        //returns a relationship with post
+        return $this->hasMany(Post::class)->orderBy('created_at','DESC');
     }
-
-
 }

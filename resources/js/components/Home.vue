@@ -9,12 +9,19 @@
         />
       </div>
       <div class="col-9">
-        <div class="d-flex align-items-center justify-content-between mb-4">
-          <h4 v-if="username != null">{{ username }}</h4>
-          <a href="/p/">Make Post</a>
+        <div class="d-flex align-items-center justify-content-between">
+          <h4>{{ user.username }}</h4>
+          <a href="/p/create" v-if="canview == 1">Make Post</a>
         </div>
+        <a
+          :href="'/profile/' + user.id + '/edit'"
+          class="d-block mb-3"
+          v-if="canview == 1"
+        >
+          Edit Profile
+        </a>
         <div class="row mb-3">
-          <div class="col-3">posts</div>
+          <div class="col-3">{{ posts.length }} posts</div>
           <div class="col-3">followers</div>
           <div class="col-3">following</div>
         </div>
@@ -37,26 +44,10 @@
       </div>
     </div>
     <div class="row mt-5">
-      <div class="col-4">
-        <img
-          src="https://images.unsplash.com/photo-1662499840616-f68c556abf3d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80"
-          class="post-img"
-          alt=""
-        />
-      </div>
-      <div class="col-4">
-        <img
-          src="https://images.unsplash.com/photo-1662499840616-f68c556abf3d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80"
-          class="post-img"
-          alt=""
-        />
-      </div>
-      <div class="col-4">
-        <img
-          src="https://images.unsplash.com/photo-1662499840616-f68c556abf3d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80"
-          class="post-img"
-          alt=""
-        />
+      <div class="col-4 mt-3 mb-3" v-for="(post, index) in posts" :key="index">
+        <a :href="'/p/' + post.id">
+          <img :src="'/storage/' + post.image" class="post-img" alt="" />
+        </a>
       </div>
     </div>
   </div>
@@ -64,9 +55,7 @@
 
 <script>
 export default {
-  props: ["username", "profile"],
-  //username is string,
-  //profile is object
+  props: ["user", "profile", "posts", "canview"],
   mounted() {
     console.log("helo");
   },

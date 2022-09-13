@@ -8,6 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class Profile extends Model
 {
     use HasFactory;
+    protected $guarded = [];//disabling mass assignment protection
+    //telling eloquent model to guard no columns 
+
+    //$fillable --> only specified values are mass assignable (assign value to model at one go)
+
     //profile will be able to fetch user based on "user_id" --> fk
     public function user(){
         //tells laravel to create a relationship between user and profile

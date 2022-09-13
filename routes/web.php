@@ -33,7 +33,19 @@ Route::get('/lmao', function () {
 
 Auth::routes();
 
-// Route::get('/home', [UserController::class, 'index'])->name('home');
+//all these routes follow the restful laravel controllers concept
+
+Route::get('/home', function(){
+    return view('welcome');
+});
 Route::get('/profile/{user}', [UserController::class, 'index'])->name('profile.show');
 
 Route::get('/p/create',[PostController::class, 'create'])->name('post.create');
+
+Route::post('/p',[PostController::class, 'store'])->name('store');
+
+Route::get('/p/{post}',[PostController::class, 'show'])->name('post.show');
+
+Route::get('/profile/{user}/edit',[UserController::class, 'edit'])->name('profile.edit');
+
+Route::patch('/p/{user}',[UserController::class, 'update'])->name('profile.update');

@@ -1,8 +1,19 @@
 @extends('layouts.app')
 @section('content')
 <div class="container">
-   <home-component username="{{$user->username}}" :profile="{{$user->profile}}"
+
+   @can('update',$user->profile)
+   <home-component :user="{{$user}}" :profile="{{$user->profile}}" 
+      :posts="{{$user->posts}}" canview="{{True}}"
    >
-   </home-component>
+   </home-component>  
+   @else
+   <home-component :user="{{$user}}" :profile="{{$user->profile}}" 
+      :posts="{{$user->posts}}" canview="{{False}}"
+   >
+   </home-component>  
+   @endcan
+
+   
 </div>
 @endsection

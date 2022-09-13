@@ -20,13 +20,13 @@ window.Vue = require("vue").default;
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default))
 import Welcome from "./components/Welcome.vue";
 import Home from "./components/Home.vue";
-import CreatePost from "./components/CreatePost.vue";
+import Post from "./components/Post.vue"
 
 const app = new Vue({
     el: "#app",
     components: {
         "welcome-component": Welcome,
         "home-component": Home,
-        "create-post-component": CreatePost,
+        "post-component": Post,
     },
 });
