@@ -6,7 +6,9 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Mail;
 use Laravel\Sanctum\HasApiTokens;
+use App\Mail\NewUserWelcomeMail;
 
 class User extends Authenticatable
 //the controller interacts with the user (eloquent model)
@@ -55,6 +57,24 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+    
+    protected static function boot(){
+        //this method will be called when we boot our model
+        //eg: creating a new user 
+        parent::boot();
+        static::created(
+            function($user){//it will give us the created model in the argument
+                $user->profile()->create([
+                    'title' => $user->username
+                ]);
+                //send out email
+                Mail::to($user->email)->send(new NewUserWelcomeMail());
+            }
+            
+
+        ); //created becomes an event, gets fired whenever a new user is created
+        //we can use this event to hook up a profile once a user is created
+    }
 
     public function profile(){
         //establish bi-directional rs (where profile can retrieve user and vice versa)
@@ -69,4 +89,11 @@ class User extends Authenticatable
         //returns a relationship with post
         return $this->hasMany(Post::class)->orderBy('created_at','DESC');
     }
+
+    //user has many followings
+    //user's following belongs to many profile
+    public function following(){
+        return $this->belongsToMany(Profile::class);
+    }
+
 }

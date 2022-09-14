@@ -2,9 +2,9 @@
 @section('content')
 <div class="container">
     <div class="container">
-        <form action="/p/{{$user->user_id}}" enctype="multipart/form-data" method="POST">
-        @csrf 
-        @method('PATCH')
+        <form action="/profile/{{$user->profile->user_id}}" enctype="multipart/form-data" method="POST">
+          @csrf 
+          @method('PUT')
         {{-- overrides the form method --}}
             <div class="row">
             <div class="col-8 offset-2">
@@ -22,7 +22,7 @@
                   type="text"
                   class="form-control {{ $errors->has('title') ? ' is-invalid' : '' }}"
                   name="title"
-                  value="{{old('title') ?? $user->title}}"
+                  value="{{old('title') ?? $user->profile->title}}"
                   {{-- required --}}
                   autocomplete="title"
                   autofocus
@@ -42,8 +42,7 @@
                 type="text"
                 class="form-control {{ $errors->has('description') ? ' is-invalid' : '' }}"
                 name="description"
-                value="{{old('description') ??$user->description}}"
-                {{-- required --}}
+                value="{{old('description') ??$user->profile->description}}"
                 autocomplete="description"
                 autofocus
               />
@@ -62,8 +61,7 @@
                   type="text"
                   class="form-control {{ $errors->has('url') ? ' is-invalid' : '' }}"
                   name="url"
-                  value="{{old('url') ??$user->url}}"
-                  {{-- required --}}
+                  value="{{old('url') ??$user->profile->url}}"
                   autocomplete="url"
                   autofocus
                 />

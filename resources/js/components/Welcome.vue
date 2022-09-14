@@ -8,8 +8,7 @@
       flex-column
     "
   >
-    <h1>Welcome</h1>
-    <a href="/profile/1">Visit Profile</a>
+    <h1>Welcome To InstaClone</h1>
   </div>
 </template>
 

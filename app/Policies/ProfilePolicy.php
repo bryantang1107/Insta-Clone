@@ -53,6 +53,7 @@ class ProfilePolicy
      */
     public function update(User $user, Profile $profile)
     {
+        //current user id compare with the profile's user id
         return $user->id == $profile->user_id;
         //only the same user can update the profile
     }

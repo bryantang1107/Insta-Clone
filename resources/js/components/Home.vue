@@ -3,14 +3,29 @@
     <div class="row">
       <div class="col-3 text-center align-self-center">
         <img
-          src="https://images.unsplash.com/photo-1517849845537-4d257902454a?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=735&q=80"
+          :src="
+            profile.image
+              ? `/storage/${profile.image}`
+              : 'https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg'
+          "
           class="rounded-circle profile-img"
           alt=""
         />
       </div>
       <div class="col-9">
-        <div class="d-flex align-items-center justify-content-between">
-          <h4>{{ user.username }}</h4>
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <div class="d-flex gap-3 align-items-center">
+            <h4 class="mb-0">{{ user.username }}</h4>
+            <template v-if="canview == 0">
+              <button
+                :class="follow ? 'btn btn-danger' : 'btn btn-primary'"
+                @click="handleFollow(user.id)"
+              >
+                {{ follow ? "Unfollow" : "Follow" }}
+              </button>
+            </template>
+          </div>
+
           <a href="/p/create" v-if="canview == 1">Make Post</a>
         </div>
         <a
@@ -21,26 +36,24 @@
           Edit Profile
         </a>
         <div class="row mb-3">
-          <div class="col-3">{{ posts.length }} posts</div>
-          <div class="col-3">followers</div>
-          <div class="col-3">following</div>
+          <div class="col-3 d-flex align-items-center gap-2">
+            <span>{{ posts.length }}</span>
+            <b>Posts</b>
+          </div>
+          <div class="col-3 d-flex align-items-center gap-2">
+            <span>{{ followers }}</span>
+            <b>Followers</b>
+          </div>
+          <div class="col-3 d-flex align-items-center gap-2">
+            <span>{{ following }}</span>
+            <b>Following</b>
+          </div>
         </div>
         <h5>{{ profile.title }}</h5>
         <p>
           {{ profile.description }}
         </p>
-        <a
-          :href="
-            profile.url
-              ? profile.url
-              : 'https://getbootstrap.com/docs/5.2/utilities/spacing/#margin-and-padding'
-          "
-          >{{
-            profile.url
-              ? profile.url
-              : "https://getbootstrap.com/docs/5.2/utilities/spacing/#margin-and-padding"
-          }}</a
-        >
+        <a :href="profile.url">{{ profile.url }}</a>
       </div>
     </div>
     <div class="row mt-5">
@@ -54,10 +67,41 @@
 </template>
 
 <script>
+import axios from "axios";
 export default {
-  props: ["user", "profile", "posts", "canview"],
+  props: [
+    "user",
+    "profile",
+    "posts",
+    "canview",
+    "follows",
+    "followercount",
+    "followingcount",
+  ],
+  data() {
+    return {
+      followers: this.followercount,
+      follow: this.follows,
+      following: this.followingcount,
+    };
+  },
   mounted() {
     console.log("helo");
+  },
+  methods: {
+    async handleFollow(id) {
+      try {
+        await axios.post(`/follow/${id}`);
+        if (this.follow) {
+          this.followers = parseInt(this.followers) - 1;
+        } else {
+          this.followers = parseInt(this.followers) + 1;
+        }
+        this.follow = !this.follow;
+      } catch (error) {
+        if (error.response.status == 401) return (window.location = "/login");
+      }
+    },
   },
 };
 </script>

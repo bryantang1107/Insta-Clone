@@ -14,6 +14,25 @@ class PostController extends Controller
         //authorization to be able to access
     }
 
+    public function index(){
+        //get all the following users of current user (auth->user)
+        
+        $users = auth()->user()->following()->pluck('profiles.user_id'); //get only the user id from profile
+        if($users->count() > 0){
+            // $posts = \App\Models\Post::where('user_id',$users)->latest()->get(); //chronological order
+            //we can do pagination
+            $posts = \App\Models\Post::whereIn('user_id',$users)->with('user')->latest()->paginate(5);
+            //load it with user
+            //with('user') is talking about the relationship (post model --> user() method)
+
+            return view('welcome',compact('posts'));
+        }else{
+            $posts = [];
+            return view('welcome',compact('posts'));
+        }
+        
+    }
+
     //prevent user from the create()/store() method if they are unauthenticated
     public function create(){
         return view('posts.create');
@@ -70,9 +89,10 @@ class PostController extends Controller
 
     //RMB
     public function show(\App\Models\Post $post){
+        $follows = auth()->user() ? auth()->user()->following->contains($post->user_id) : false;
         //laravel will fetch our post based on id automatically
         //automatically does findorfail for us
-        return view('posts.view', compact('post'));
+        return view('posts.view', compact('post','follows'));
 
         //compact('post') --> will match any variable that has the string
         //$post matched

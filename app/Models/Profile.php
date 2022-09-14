@@ -21,4 +21,9 @@ class Profile extends Model
         //foreignKey --> explicitly provide the fk name (no need to provide if we follow the naming convention)
         //naming convetion --> same as db name 
     }
+    //profile has followers
+    //profile's followers belongs to many user
+    public function followers(){
+        return $this->belongsToMany(User::class);
+    }
 }
