@@ -52,6 +52,7 @@ class ProfilePolicy
      * @return \Illuminate\Auth\Access\Response|bool
      */
     public function update(User $user, Profile $profile)
+    //take in $profile (target user) and $user (current user --> automatically provided) 
     {
         //current user id compare with the profile's user id
         return $user->id == $profile->user_id;

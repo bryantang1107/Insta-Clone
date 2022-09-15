@@ -13,9 +13,8 @@ class FollowsController extends Controller
         //authorization to be able to access
     }
     public function store(\App\Models\User $user){
-       
         //store followers
         return auth()->user()->following()->toggle($user->profile);
-        //returns an array of attach and detach
+        //returns an array of attach and detach (relationships)
     }
 }

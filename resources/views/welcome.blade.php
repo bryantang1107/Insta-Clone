@@ -2,7 +2,6 @@
 
 @section('content')
 <div class="container">
-   
     <welcome-component class="mb-5"></welcome-component>
     @foreach ($posts as $post)
         <post-component :post="{{$post}}" :user="{{$post->user}}" image="{{$post->user->profile->image}}" current="{{auth()->user()->id }}" :follows={{true}}></post-component>
