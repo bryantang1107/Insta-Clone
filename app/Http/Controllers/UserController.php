@@ -68,6 +68,7 @@ class UserController extends Controller
             'url' => 'url', //a validator that validates url
             'image' => 'image', //validate that its image
         ]);
+
         if (request('image')) {
             $imagePath = request('image')->store('profile', 'public');
             $image = Image::make(public_path("storage/$imagePath"))->fit(
