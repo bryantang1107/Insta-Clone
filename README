@@ -1,5 +1,13 @@
-npm install
-composer install
-create .env change db name & setup mail trap
-php artisan migrate:fresh
-php artisan storage:link
+Requirements:
+- php version 7.3 (https://sourceforge.net/projects/xampp/files/XAMPP%20Windows/7.3.2/)
+- composer version 1.10.26
+- laravel version < 9 (laravel mix)
+- npm install
+- composer install
+- create .env change db name & setup mail trap
+- php artisan migrate:fresh
+- php artisan storage:link
+- php artisan key:generate
+
+
+
