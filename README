@@ -1,0 +1,5 @@
+npm install
+composer install
+create .env change db name & setup mail trap
+php artisan migrate:fresh
+php artisan storage:link
