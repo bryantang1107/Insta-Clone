@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Intervention\Image\Facades\Image;
+use Illuminate\Support\Facades\Cache;
 
 class PostController extends Controller
 {   
@@ -23,12 +23,14 @@ class PostController extends Controller
             // $posts = \App\Models\Post::where('user_id',$users)->latest()->get(); //chronological order
             //we can do pagination
             $posts = \App\Models\Post::whereIn('user_id',$users)->with('user')->latest()->paginate(5);
+            $likedPost = (auth()->user()->liking()->pluck('post_user.post_id'));
             //with is for eager loading. Along the main model (Post), Laravel will preload the relationship(s) you specify (user). 
             //load it with user so we can display user info (by accessing via $post->user->username)
-            return view('welcome',compact('posts'));
+            return view('welcome',compact('posts','likedPost'));
         }else{
             $posts = [];
-            return view('welcome',compact('posts'));
+            $likedPost = [];
+            return view('welcome',compact('posts','likedPost'));
         }
         
     }
@@ -90,9 +92,19 @@ class PostController extends Controller
     public function show(\App\Models\Post $post){
         //we can use contains (function offered by collection)
         $follows = auth()->user() ? auth()->user()->following->contains($post->user_id) : false;
+        //check if the current post is liked by current user
+        $likedPost = auth()->user() ? auth()->user()->liking->contains($post->id) : false;
+
+        $likeCount = Cache::remember(
+            'count.like' . auth()->user(),
+            now()->addSeconds(30), //30 seconds cache 
+            function () use ($post) {
+                return $post->likes->count();
+            }
+        );
         //laravel will fetch our post based on id automatically
         //automatically does findorfail for us
-        return view('posts.view', compact('post','follows'));
+        return view('posts.view', compact('post','follows','likedPost','likeCount'));
 
         //compact('post') --> will match any variable that has the string
         //$post matched

@@ -3,7 +3,7 @@
     <div class="container">
         @can('update', $user->profile)
             <home-component :user="{{ $user }}" :profile="{{ $user->profile }}" :posts="{{ $user->posts }}"
-                canview="{{ true }}" follows="{{ $follows }}" followercount="{{ $followerCount }}"
+                canview="{{ true }}" follows="{{ $follows }}" followercount="{{ $followerCount }}" 
                 followingcount="{{ $followingCount }}">
             </home-component>
         @else

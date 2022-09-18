@@ -4,6 +4,7 @@ use App\Http\Controllers\FollowsController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\LikesController;
 use App\Mail\NewUserWelcomeMail;
 use Illuminate\Support\Facades\Auth;
 
@@ -45,6 +46,8 @@ $url = route('profile',['id' => 1]);
 Route::post('/follow/{user}', [FollowsController::class, 'store'])->name(
     'follow.store'
 );
+
+Route::post('/likes/{post}', [LikesController::class, 'store']);
 
 Route::get('/profile/{user}', [UserController::class, 'index'])->name(
     'profile.show'

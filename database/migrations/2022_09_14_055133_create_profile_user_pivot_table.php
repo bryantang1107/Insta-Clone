@@ -15,6 +15,8 @@ class CreateProfileUserPivotTable extends Migration
     {
         Schema::create('profile_user', function (Blueprint $table) {
             $table->id();
+            //this pivot reference to two FK from different tables
+            //when toggled, laravel will automatically look for this pivot table 
             $table->unsignedBigInteger('profile_id');
             $table->unsignedBigInteger('user_id');
             $table->timestamps();

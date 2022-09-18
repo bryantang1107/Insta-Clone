@@ -20,7 +20,15 @@ window.Vue = require("vue").default;
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default))
 import Welcome from "./components/Welcome.vue";
 import Home from "./components/Home.vue";
-import Post from "./components/Post.vue"
+import Post from "./components/Post.vue";
+
+import { library } from "@fortawesome/fontawesome-svg-core";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import { faHeart, faComment } from "@fortawesome/free-regular-svg-icons";
+import { faHeart as faHeartSolid } from "@fortawesome/free-solid-svg-icons";
+
+library.add(faHeart, faHeartSolid, faComment);
+Vue.component("font-awesome-icon", FontAwesomeIcon);
 
 const app = new Vue({
     el: "#app",
