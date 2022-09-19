@@ -7,6 +7,7 @@
 require("./bootstrap");
 
 window.Vue = require("vue").default;
+import vuetify from "./vuetify";
 
 /**
  * The following block of code may be used to automatically register your
@@ -37,4 +38,5 @@ const app = new Vue({
         "home-component": Home,
         "post-component": Post,
     },
+    vuetify,
 });
