@@ -150,3 +150,6 @@ Route::get('/search/{search}', function ($search) {
 
 Encoded forward slashes are only supported within the last route segment.
 */
+Auth::routes();
+
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

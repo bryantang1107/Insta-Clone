@@ -1,43 +1,65 @@
 <template>
-  <div class="card w-50 mx-auto mb-3">
-    <div class="row p-2">
+  <v-card max-width="50%" class="mx-auto">
+    <div class="row p-3">
       <div class="d-flex align-items-center gap-3">
-        <img :src="
-          image
-            ? `/storage/${image}`
-            : 'https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg'
-        " class="rounded-circle profile-img" alt="" />
+        <img
+          :src="
+            image
+              ? `/storage/${image}`
+              : 'https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg'
+          "
+          class="rounded-circle profile-img"
+          alt=""
+        />
 
-        <a :href="`/profile/${user.id}`" class="text-decoration-none"><b>{{ user.username }}</b></a>
-        <button class="btn btn-primary" v-if="current != post.user_id && !follow" @click="handleFollow(post.user_id)">
+        <a :href="`/profile/${user.id}`" class="text-decoration-none"
+          ><b>{{ user.username }}</b></a
+        >
+        <button
+          class="btn btn-primary"
+          v-if="current != post.user_id && !follow"
+          @click="handleFollow(post.user_id)"
+        >
           Follow
         </button>
       </div>
     </div>
-    <img :src="'/storage/' + post.image" alt="" class="w-100" />
-    <div class="card-body">
+    <v-img :src="'/storage/' + post.image" alt="" class="w-100" />
+    <v-card-text style="color: #000">
       <div class="d-flex align-items-center gap-3 mb-3">
-        <font-awesome-icon :icon="isLike ? 'fa-solid fa-heart' : 'fa-regular fa-heart'"
-          style="font-size: 1.2rem; cursor: pointer;" @click="handleLike(post.id)" :class="isLike && 'red'" />
-        <font-awesome-icon icon="fa-regular fa-comment" style="font-size: 1.2rem; cursor: pointer;" />
+        <v-icon
+          style="cursor: pointer"
+          :color="isLike ? '#ff0000' : '#000'"
+          @click="handleLike(post.id)"
+          >{{ isLike ? "favorite" : "favorite_border" }}</v-icon
+        >
+        <font-awesome-icon
+          icon="fa-regular fa-comment"
+          style="font-size: 1.2rem; cursor: pointer"
+        />
       </div>
       <div class="card-title">
-        <b class="d-block">{{likeCount}} likes</b>
+        <b class="d-block">{{ likeCount }} likes</b>
         <b>{{ user.username }}</b>
         <p class="ml-4 d-inline">{{ post.caption }}</p>
       </div>
-    </div>
-  </div>
+    </v-card-text>
+  </v-card>
 </template>
 
 <script>
+import { mdiCardsHeartOutline } from "@mdi/js";
+
 export default {
   props: ["post", "user", "image", "current", "follows", "like", "likecount"],
   data() {
     return {
       follow: this.follows,
       isLike: this.like,
-      likeCount: this.likecount
+      likeCount: this.likecount,
+      icons: {
+        mdiCardsHeartOutline,
+      },
     };
   },
   methods: {
@@ -63,7 +85,6 @@ export default {
       }
     },
   },
-
 };
 </script>
 
@@ -76,11 +97,5 @@ export default {
 
 .line {
   transform: translateX(50%);
-}
-
-.red {
-  color: red;
-  transition: all 0.3s ease-in-out;
-  transform: scale(1.2);
 }
 </style>

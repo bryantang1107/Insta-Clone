@@ -5,6 +5,7 @@
  */
 
 require("./bootstrap");
+import "material-design-icons-iconfont/dist/material-design-icons.css";
 
 window.Vue = require("vue").default;
 import vuetify from "./vuetify";
@@ -22,7 +23,6 @@ import vuetify from "./vuetify";
 import Welcome from "./components/Welcome.vue";
 import Home from "./components/Home.vue";
 import Post from "./components/Post.vue";
-
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { faHeart, faComment } from "@fortawesome/free-regular-svg-icons";
@@ -33,10 +33,10 @@ Vue.component("font-awesome-icon", FontAwesomeIcon);
 
 const app = new Vue({
     el: "#app",
+    vuetify,
     components: {
         "welcome-component": Welcome,
         "home-component": Home,
         "post-component": Post,
     },
-    vuetify,
 });
