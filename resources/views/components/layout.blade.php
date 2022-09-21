@@ -84,7 +84,7 @@
                 </div>
             </nav>
             <main class="py-4">
-                @yield('content')
+                {{$slot}}
             </main>
             {{-- can put footer here --}}
         </v-app>

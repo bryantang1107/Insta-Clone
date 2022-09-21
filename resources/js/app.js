@@ -8,7 +8,6 @@ require("./bootstrap");
 import "material-design-icons-iconfont/dist/material-design-icons.css";
 
 window.Vue = require("vue").default;
-import vuetify from "./vuetify";
 
 /**
  * The following block of code may be used to automatically register your
@@ -33,7 +32,6 @@ Vue.component("font-awesome-icon", FontAwesomeIcon);
 
 const app = new Vue({
     el: "#app",
-    vuetify,
     components: {
         "welcome-component": Welcome,
         "home-component": Home,
