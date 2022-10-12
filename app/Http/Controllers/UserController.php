@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Intervention\Image\Facades\Image;
+use Illuminate\Support\Facades\Session;
 
 class UserController extends Controller
 {
@@ -79,8 +81,17 @@ class UserController extends Controller
             $imageArray = ['image' => $imagePath];
         }
         //$data has array of key image, we use merge to override the image key with image paths
+        //update profile through a user
         $user->profile()->update(array_merge($data, $imageArray ?? [])); //update profile with validated new data
         // $user = \App\Models\User::find($user_id); //is equivalent to the type hint (\App\Models\User $user)
         return redirect('/profile/' . auth()->user()->id);
+    }
+
+    public function destroy(User $user)
+    {
+        $user->delete();
+        Session::flush();
+        Auth::logout();
+        return redirect('/login'); //redirect based on url
     }
 }

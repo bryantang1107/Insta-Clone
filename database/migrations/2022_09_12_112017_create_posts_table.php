@@ -21,6 +21,10 @@ class CreatePostsTable extends Migration
             $table->timestamps();
 
             $table->index('user_id');
+
+            //delete on cascade when user deletes account, corresponding posts are deleted 2
+            // $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            //references column name of "id" on "users" table
         });
     }
 

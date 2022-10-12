@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\FollowsController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
@@ -52,12 +53,15 @@ Route::post('/likes/{post}', [LikesController::class, 'store']);
 Route::get('/profile/{user}', [UserController::class, 'index'])->name(
     'profile.show'
 );
+Route::delete('/profile/{user}', [UserController::class, 'destroy']);
 
 Route::get('/p/create', [PostController::class, 'create'])->name('post.create');
 
 Route::post('/p', [PostController::class, 'store'])->name('store');
 
 Route::get('/p/{post}', [PostController::class, 'show'])->name('post.show');
+Route::post('/p/{post}', [PostController::class, 'update']); //update caption
+Route::delete('/p/{post}', [PostController::class, 'destroy']); //delete post
 
 Route::get('/profile/{user}/edit', [UserController::class, 'edit'])->name(
     'profile.edit'
@@ -73,6 +77,8 @@ Route::put('/profile/{user}', [UserController::class, 'update'])->name(
 
 //for route that only returns view, accepts third parameter (data)
 Route::view('/about', 'about');
+Route::get('/p/comment/{post}', [CommentController::class, 'index']);
+Route::post('/p/comment/{post}', [CommentController::class, 'store']);
 
 /*
 Route::get('/example/{some}/{param}',function($param1, $param2){
@@ -152,4 +158,7 @@ Encoded forward slashes are only supported within the last route segment.
 */
 Auth::routes();
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::get('/home', [
+    App\Http\Controllers\HomeController::class,
+    'index',
+])->name('home');

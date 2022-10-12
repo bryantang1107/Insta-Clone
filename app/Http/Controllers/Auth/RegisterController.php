@@ -71,6 +71,7 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
+        //use model directly when creating a model instance that is not tied to a relationship (user registration not tied to any relationship)
         return User::create([
             'name' => $data['name'],
             'email' => $data['email'],
