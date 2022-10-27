@@ -1,14 +1,20 @@
+@section('title')
+Home
+@endsection
 <x-layout>
     <div class="container">
         <welcome-component class="mb-5"></welcome-component>
         @foreach ($posts as $post)
         @if($likedPost->contains($post->id))
         <post-component :post="{{$post}}" :user="{{$post->user}}" image="{{$post->user->profile->image}}"
-            current="{{auth()->user()->id }}" :follows={{true}} like={{true}} likecount={{$post->likes->count()}} >
+            current="{{auth()->user()->id }}" :follows={{true}} like={{true}} likecount={{$post->likes->count()}}
+            postDate="{{$post->created_at->diffForHumans()}}" commentCount="{{$post->comments->count()}}">
         </post-component>
         @else
         <post-component :post="{{$post}}" :user="{{$post->user}}" image="{{$post->user->profile->image}}"
-            current="{{auth()->user()->id }}" :follows={{true}} likecount={{$post->likes->count()}}></post-component>
+            current="{{auth()->user()->id }}" :follows={{true}} likecount={{$post->likes->count()}}
+            postDate="{{$post->created_at->diffForHumans()}}" commentCount="{{$post->comments->count()}}">
+        </post-component>
         @endif
         @endforeach
         @if ($posts)

@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Activity;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Intervention\Image\Facades\Image;
@@ -23,8 +25,8 @@ class UserController extends Controller
         $follows = auth()->user()
             ? auth()
                 ->user()
-                ->following->contains($user->id)
-            : false;
+                ->following->contains($user->profile)
+            : 0;
         $followerCount = Cache::remember(
             'count.follower' . $user->id,
             now()->addSeconds(30),
@@ -41,10 +43,28 @@ class UserController extends Controller
                 return $user->following->count();
             }
         );
-        return view(
-            'profile.home',
-            compact('user', 'follows', 'followerCount', 'followingCount')
-        ); //compact --> match the string with the var name
+        if (auth()->user()) {
+            $followRequest = auth()
+                ->user()
+                ->requestFollow->contains($user->id);
+            return view(
+                'profile.home',
+                compact(
+                    'user',
+                    'follows',
+                    'followerCount',
+                    'followingCount',
+                    'followRequest'
+                )
+            );
+        } else {
+            return view(
+                'profile.home',
+                compact('user', 'follows', 'followerCount', 'followingCount')
+            );
+        }
+
+        //compact --> match the string with the var name
         //(access using the same string in the front end)
 
         //this user has all the relationships to other table
@@ -69,8 +89,13 @@ class UserController extends Controller
             'description' => 'required',
             'url' => 'url', //a validator that validates url
             'image' => 'image', //validate that its image
+            'is_private' => '',
         ]);
-
+        if (!empty($data['is_private'])) {
+            $data['is_private'] = 1;
+        } else {
+            $data['is_private'] = 0;
+        }
         if (request('image')) {
             $imagePath = request('image')->store('profile', 'public');
             $image = Image::make(public_path("storage/$imagePath"))->fit(
@@ -86,6 +111,16 @@ class UserController extends Controller
         // $user = \App\Models\User::find($user_id); //is equivalent to the type hint (\App\Models\User $user)
         return redirect('/profile/' . auth()->user()->id);
     }
+    public function getUser($search)
+    {
+        $users = DB::table('users')
+            ->join('profiles', 'users.id', '=', 'profiles.user_id')
+            ->where('username', 'LIKE', "%{$search}%")
+            ->orWhere('name', 'LIKE', "%{$search}%")
+            ->select('users.username', 'profiles.image', 'users.id')
+            ->get();
+        return $users;
+    }
 
     public function destroy(User $user)
     {
@@ -93,5 +128,42 @@ class UserController extends Controller
         Session::flush();
         Auth::logout();
         return redirect('/login'); //redirect based on url
+    }
+
+    public function getActivityFollow()
+    {
+        $id = auth()->user()->id;
+        return Activity::join('users', 'activities.user_id', '=', 'users.id')
+            ->join('profiles', 'users.id', '=', 'profiles.user_id')
+            ->where('activities.target_user_id', $id)
+            ->where('activities.type', 'request')
+            ->orderBy('activities.type', 'DESC')
+            ->select(
+                'profiles.image',
+                'activities.message',
+                'activities.type',
+                'users.username',
+                'users.id'
+            )
+            ->orderBy('activities.created_at', 'DESC')
+            ->get();
+    }
+    public function getActivities()
+    {
+        $id = auth()->user()->id;
+        return Activity::join('users', 'activities.user_id', '=', 'users.id')
+            ->join('profiles', 'users.id', '=', 'profiles.user_id')
+            ->where('activities.target_user_id', $id)
+            ->where('activities.type', '!=', 'request')
+            ->select(
+                'profiles.image',
+                'activities.message',
+                'activities.type',
+                'users.username',
+                'users.id',
+                'activities.post_id'
+            )
+            ->orderBy('activities.created_at', 'DESC')
+            ->get();
     }
 }

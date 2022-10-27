@@ -20,19 +20,40 @@ window.Vue = require("vue").default;
 // const files = require.context('./', true, /\.vue$/i)
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default))
 import Welcome from "./components/Welcome.vue";
-import Home from "./components/Home.vue";
-import Post from "./components/Post.vue";
+import Home from "./components/Profile/Home.vue";
+import Post from "./components/Profile/Post.vue";
+import Search from "./components/Search.vue";
+import PrivateProfile from "./components/PrivateProfile.vue";
+import Activity from "./components/Activity/Activity.vue";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { faHeart, faComment } from "@fortawesome/free-regular-svg-icons";
+import {
+    faHeart,
+    faComment,
+    faBell,
+} from "@fortawesome/free-regular-svg-icons";
 import {
     faHeart as faHeartSolid,
     faPencil,
     faEllipsis,
     faTrash,
+    faSearch,
+    faXmark,
+    faLock,
 } from "@fortawesome/free-solid-svg-icons";
 
-library.add(faHeart, faHeartSolid, faComment, faPencil, faEllipsis, faTrash);
+library.add(
+    faHeart,
+    faHeartSolid,
+    faComment,
+    faPencil,
+    faEllipsis,
+    faTrash,
+    faSearch,
+    faXmark,
+    faLock,
+    faBell
+);
 Vue.component("font-awesome-icon", FontAwesomeIcon);
 
 const app = new Vue({
@@ -41,5 +62,8 @@ const app = new Vue({
         "welcome-component": Welcome,
         "home-component": Home,
         "post-component": Post,
+        "search-component": Search,
+        "private-profile-component": PrivateProfile,
+        "activity-component": Activity,
     },
 });

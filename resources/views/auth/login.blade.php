@@ -1,5 +1,5 @@
 <x-layout>
-    <div class="container">
+    <div class="container" style="z-index: -1; position: absolute">
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <div class="card">

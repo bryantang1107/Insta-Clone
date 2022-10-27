@@ -31,6 +31,9 @@ class ProfilePolicy
     public function view(User $user, Profile $profile)
     {
         //
+        return $profile->is_private == 0 ||
+            $user->id == $profile->user_id ||
+            $profile->followers->contains($user->id);
     }
 
     /**

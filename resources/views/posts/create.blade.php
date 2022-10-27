@@ -1,3 +1,6 @@
+@section('title')
+Make A Post
+@endsection
 <x-layout>
   <div class="container">
     <div class="container">

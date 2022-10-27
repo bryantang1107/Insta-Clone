@@ -56,7 +56,7 @@ class User extends Authenticatable
             //it will give us the created model in the argument
             $user->profile()->create([
                 //associate each user with a profile
-                'title' => $user->username,
+                'title' => $user->name,
             ]);
             //send out email
             Mail::to($user->email)->send(new NewUserWelcomeMail());
@@ -89,7 +89,17 @@ class User extends Authenticatable
     //user's following belongs to many profile
     public function following()
     {
-        return $this->belongsToMany(Profile::class); //optional: takes in second parameter (the pivot table name)
+        return $this->belongsToMany(Profile::class)->where(
+            'status',
+            'accepted'
+        ); //optional: takes in second parameter (the pivot table name)
+        //if your pivot follows the naming convention (no need to provide)
+        //naming convention: alphabetical order + _ (profile_user pivot table name) --> only in many to many relationship
+    }
+
+    public function requestFollow()
+    {
+        return $this->belongsToMany(Profile::class)->where('status', 'pending'); //optional: takes in second parameter (the pivot table name)
         //if your pivot follows the naming convention (no need to provide)
         //naming convention: alphabetical order + _ (profile_user pivot table name) --> only in many to many relationship
     }
@@ -97,5 +107,10 @@ class User extends Authenticatable
     public function liking()
     {
         return $this->belongsToMany(Post::class); //takes in second parameter (the pivot table name)
+    }
+
+    public function activities()
+    {
+        return $this->hasMany(Activity::class);
     }
 }

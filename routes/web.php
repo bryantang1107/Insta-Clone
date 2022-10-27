@@ -79,6 +79,13 @@ Route::put('/profile/{user}', [UserController::class, 'update'])->name(
 Route::view('/about', 'about');
 Route::get('/p/comment/{post}', [CommentController::class, 'index']);
 Route::post('/p/comment/{post}', [CommentController::class, 'store']);
+Route::get('/user/activity/follow', [
+    UserController::class,
+    'getActivityFollow',
+]);
+Route::get('/user/activity/all', [UserController::class, 'getActivities']);
+Route::put('/user/follow', [FollowsController::class, 'update']);
+Route::get('/user/{search}', [UserController::class, 'getUser']);
 
 /*
 Route::get('/example/{some}/{param}',function($param1, $param2){

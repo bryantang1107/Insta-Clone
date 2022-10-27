@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use App\Models\User;
 use App\Models\Comment;
+use App\Models\Activity;
 
 class CommentController extends Controller
 {
@@ -36,9 +37,26 @@ class CommentController extends Controller
             'text' => $data['comment'],
             'user_id' => auth()->user()->id,
         ]);
-        
-        return auth()
-            ->user()
-            ->profile->image;
+        if (auth()->id() == $post->user_id) {
+            return auth()->user()->profile->image;
+        }
+        $activity = Activity::where('user_id', auth()->id())
+            ->where('target_user_id', $post->user_id)
+            ->where('post_id', $post->id)
+            ->where('type', 'comment')
+            ->first();
+        if (!empty($activity)) {
+            $activity->delete();
+        } else {
+            Activity::create([
+                'user_id' => auth()->id(),
+                'target_user_id' => $post->user_id,
+                'type' => 'comment',
+                'message' => "commented on your post!",
+                'post_id' => $post->id,
+            ]);
+        }
+
+        return auth()->user()->profile->image;
     }
 }

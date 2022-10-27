@@ -1,3 +1,6 @@
+@section('title')
+Edit Profile
+@endsection
 <x-layout>
   <div class="container">
     <div class="container">
@@ -12,7 +15,7 @@
             </div>
 
             <div class="row mb-3">
-              <label for="title" class="col-md-4 col-form-label">
+              <label for="title" class="col-md-4 col-form-label fw-bold">
                 Title
               </label>
 
@@ -26,7 +29,7 @@
               @endif
             </div>
             <div class="row mb-3">
-              <label for="description" class="col-md-4 col-form-label">
+              <label for="description" class="col-md-4 col-form-label fw-bold">
                 Description
               </label>
               <input id="description" type="text"
@@ -38,8 +41,8 @@
               </span>
               @endif
             </div>
-            <div class="row mb-3">
-              <label for="url" class="col-md-4 col-form-label">
+            <div class="row mb-4">
+              <label for="url" class="col-md-4 col-form-label fw-bold">
                 Url
               </label>
               <input id="url" type="text" class="form-control {{ $errors->has('url') ? ' is-invalid' : '' }}" name="url"
@@ -50,11 +53,19 @@
               </span>
               @endif
             </div>
+            <div class="row mb-3">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckChecked"
+                  style="cursor: pointer" name="is_private" @if($user->profile->is_private) checked
+                @endif>
+                <label class="form-check-label fw-bold" for="flexSwitchCheckChecked">Make Account Private</label>
+              </div>
+            </div>
             <div class="row">
-              <label for="image" class="col-md-4 col-form-label">
+              <label for="image" class="col-md-4 col-form-label fw-bold">
                 Profile Picture
               </label>
-              <input type="file" class="form-control-file" id="image" name="image" />
+              <input type="file" class="form-control" id="image" name="image" />
               @if ($errors->has('image'))
               <strong class="mt-3 alert alert-danger">{{ $errors->first('image') }}</strong>
               @endif
