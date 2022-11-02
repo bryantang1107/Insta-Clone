@@ -17,7 +17,7 @@
         <div class="d-flex align-items-center justify-content-between mb-3">
           <div class="d-flex gap-3 align-items-center">
             <h4 class="mb-0">{{ user.username }}</h4>
-            <template v-if="canview == 0">
+            <template v-if="!is_user && user.profile.is_private">
               <button
                 class="btn btn-primary"
                 @click="handleFollow(user.id)"
@@ -32,6 +32,14 @@
                 data-bs-target="#unfollowUser"
               >
                 Unfollow
+              </button>
+            </template>
+            <template v-else-if="!is_user">
+              <button
+                :class="follow ? 'btn btn-danger' : 'btn btn-primary'"
+                @click="handleFollow(user.id)"
+              >
+                {{ follow ? "Unfollow" : "Follow" }}
               </button>
             </template>
             <div
@@ -81,12 +89,12 @@
             </div>
           </div>
 
-          <a href="/p/create" v-if="canview == 1">Make Post</a>
+          <a href="/p/create" v-if="is_user">Make Post</a>
         </div>
         <a
           :href="'/profile/' + user.id + '/edit'"
           class="d-block mb-3"
-          v-if="canview == 1"
+          v-if="is_user"
         >
           Edit Profile
         </a>
@@ -95,14 +103,18 @@
             <span>{{ posts.length }}</span>
             <b>Posts</b>
           </div>
-          <div class="col-3 d-flex align-items-center gap-2">
-            <span>{{ followers }}</span>
-            <b>Followers</b>
-          </div>
-          <div class="col-3 d-flex align-items-center gap-2">
-            <span>{{ following }}</span>
-            <b>Following</b>
-          </div>
+          <FollowerList
+            :followers="followers"
+            :user_id="user.id"
+            :is_user="is_user"
+            class="col-3"
+          ></FollowerList>
+          <FollowingList
+            :following="following"
+            class="col-3"
+            :is_user="is_user"
+            :user_id="user.id"
+          ></FollowingList>
         </div>
         <h5>{{ profile.title }}</h5>
         <p>
@@ -123,7 +135,10 @@
 
 <script>
 import axios from "axios";
+const FollowerList = () => import("./FollowerList.vue");
+const FollowingList = () => import("./FollowingList.vue");
 export default {
+  components: { FollowerList, FollowingList },
   props: [
     "user",
     "profile",
@@ -135,9 +150,10 @@ export default {
   ],
   data() {
     return {
-      followers: this.followercount,
-      follow: this.follows,
-      following: this.followingcount,
+      followers: parseInt(this.followercount),
+      follow: parseInt(this.follows),
+      following: parseInt(this.followingcount),
+      is_user: this.canview ? true : false,
     };
   },
   methods: {
@@ -149,8 +165,10 @@ export default {
             type: "follow",
           },
         });
-        if (this.follow) {
+        if (this.follow && this.user.profile.is_private) {
           window.location.reload();
+        } else if (this.follow) {
+          this.followers = parseInt(this.followers) - 1;
         } else {
           this.followers = parseInt(this.followers) + 1;
         }
@@ -192,6 +210,7 @@ export default {
   transform: translateY(-5px);
   transition: transform 0.3s ease-in-out;
 }
+
 @media (max-width: 1076px) {
   .user-profile-page {
     width: 100%;

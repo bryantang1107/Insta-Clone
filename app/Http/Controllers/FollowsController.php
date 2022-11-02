@@ -98,6 +98,7 @@ class FollowsController extends Controller
     public function update()
     {
         $this->authorize('update', auth()->user()->profile);
+        $this->authorize('privateAccount', auth()->user()->profile);
         //accept follow request
         if (request('data')['decision'] == 'accept') {
             //tell user, follow accepted
@@ -136,5 +137,17 @@ class FollowsController extends Controller
             $user = User::find(request('data')['user_id']);
             return $user->following()->toggle(auth()->id());
         }
+    }
+    public function removeFollower(User $user)
+    {
+        $this->authorize('update', $user->profile);
+        $activities = Activity::whereIn('user_id', [$user->id, auth()->id()])
+            ->whereIn('target_user_id', [$user->id, auth()->id()])
+            ->whereIn('type', ['accept'])
+            ->get();
+        foreach ($activities as $activity) {
+            $activity->delete();
+        }
+        return $user->following()->toggle(auth()->id());
     }
 }

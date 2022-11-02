@@ -98,4 +98,16 @@ class ProfilePolicy
     {
         //
     }
+
+    /**
+     * Determine whether the user profile is private.
+     *
+     * @param  \App\Models\User  $user
+     * @param  \App\Models\Profile  $profile
+     * @return \Illuminate\Auth\Access\Response|bool
+     */
+    public function privateAccount(User $user, Profile $profile)
+    {
+        return $profile->is_private;
+    }
 }

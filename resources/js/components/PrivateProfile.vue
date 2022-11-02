@@ -86,7 +86,6 @@ export default {
         await axios.post(`/follow/${id}`, {
           data: {
             is_following: 0,
-            is_requested: false,
             type: 'request',
           },
         });

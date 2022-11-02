@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\Helper;
 use App\Models\Activity;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\Session;
 
@@ -15,34 +15,15 @@ class UserController extends Controller
 {
     public function index(User $user)
     {
-        //check if the request's route's name is called 'profile.show'
-        // request()->route()->named('profile.show')
-
-        // Note: request() can replace Request $request (in the params)
-
         //view user profile
-        //check if user that views is authenticated, if true then check if viewer is following the viewed user profile
+        //check if user that views is currently following the profile
         $follows = auth()->user()
             ? auth()
                 ->user()
                 ->following->contains($user->profile)
             : 0;
-        $followerCount = Cache::remember(
-            'count.follower' . $user->id,
-            now()->addSeconds(30),
-            function () use ($user) {
-                return $user->profile->followers->count();
-            }
-        );
-        //now()->addSeconds(30) expiration time
-        //the callback function will run if the key 'count.follower' is not there
-        $followingCount = Cache::remember(
-            'count.following' . $user->id,
-            now()->addSeconds(30),
-            function () use ($user) {
-                return $user->following->count();
-            }
-        );
+        $followerCount = $user->profile->followers->count();
+        $followingCount = $user->following->count();
         if (auth()->user()) {
             $followRequest = auth()
                 ->user()
@@ -65,25 +46,17 @@ class UserController extends Controller
         }
 
         //compact --> match the string with the var name
-        //(access using the same string in the front end)
-
-        //this user has all the relationships to other table
-        //defined in the modal class
-        //this $user variable have access to all the methods in the modal
     }
     public function edit(User $user)
     {
-        //$user is the viewed user
         $this->authorize('update', $user->profile);
-        // $this->authorize('update',$user->profile); //authorize if user can update on a provided profile
-        //user will not be able to view the edit page on profile that does not belong to them
+        // check if user is authorized to update profile
         return view('profile.edit', compact('user'));
     }
 
     public function update(User $user)
     {
-        //in oop php, we pass function as string
-        $this->authorize('update', $user->profile); //refer to profilepolicy
+        $this->authorize('update', $user->profile);
         $data = request()->validate([
             'title' => 'required',
             'description' => 'required',
@@ -91,11 +64,7 @@ class UserController extends Controller
             'image' => 'image', //validate that its image
             'is_private' => '',
         ]);
-        if (!empty($data['is_private'])) {
-            $data['is_private'] = 1;
-        } else {
-            $data['is_private'] = 0;
-        }
+        $data['is_private'] = !empty($data['is_private']) ? 1 : 0;
         if (request('image')) {
             $imagePath = request('image')->store('profile', 'public');
             $image = Image::make(public_path("storage/$imagePath"))->fit(
@@ -105,10 +74,7 @@ class UserController extends Controller
             $image->save();
             $imageArray = ['image' => $imagePath];
         }
-        //$data has array of key image, we use merge to override the image key with image paths
-        //update profile through a user
-        $user->profile()->update(array_merge($data, $imageArray ?? [])); //update profile with validated new data
-        // $user = \App\Models\User::find($user_id); //is equivalent to the type hint (\App\Models\User $user)
+        $user->profile()->update(array_merge($data, $imageArray ?? []));
         return redirect('/profile/' . auth()->user()->id);
     }
     public function getUser($search)
@@ -127,7 +93,7 @@ class UserController extends Controller
         $user->delete();
         Session::flush();
         Auth::logout();
-        return redirect('/login'); //redirect based on url
+        return redirect('/login');
     }
 
     public function getActivityFollow()
@@ -165,5 +131,38 @@ class UserController extends Controller
             )
             ->orderBy('activities.created_at', 'DESC')
             ->get();
+    }
+
+    public function getFollowers(User $user)
+    {
+        if (!auth()->user()) {
+            return $user->profile->followers;
+        }
+        $followers = $user->profile->followers->pluck('profile');
+
+        $helper = new Helper();
+
+        $data = $helper->getUser($followers);
+        foreach ($data as $index => $item) {
+            $user = User::find($item->user_id);
+            if (!empty($user)) {
+                $data[$index]['user'] = $user;
+                //alternative
+                //$data[$index]->user = $user;
+            }
+        }
+
+        return $data;
+    }
+
+    public function getFollowing(User $user)
+    {
+        if (!auth()->user()) {
+            return $user->following;
+        }
+        $followings = $user->following;
+        $helper = new Helper();
+        $data = $helper->getUser($followings);
+        return $data;
     }
 }

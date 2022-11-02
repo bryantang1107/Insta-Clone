@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Cache;
 use Intervention\Image\Facades\Image;
 
 class PostController extends Controller
@@ -131,20 +130,8 @@ class PostController extends Controller
                 ->liking->contains($post->id)
             : false;
 
-        $likeCount = Cache::remember(
-            'count.like' . auth()->user(),
-            now()->addSeconds(30), //30 seconds cache
-            function () use ($post) {
-                return $post->likes->count();
-            }
-        );
-        $commentCount = Cache::remember(
-            'count.comment' . auth()->user(),
-            now()->addSeconds(30), //30 seconds cache
-            function () use ($post) {
-                return $post->comments->count();
-            }
-        );
+        $likeCount = $post->likes->count();
+        $commentCount = $post->comments->count();
         //laravel will fetch our post based on id automatically
         //automatically does findorfail for us
         return view(

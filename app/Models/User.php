@@ -89,10 +89,9 @@ class User extends Authenticatable
     //user's following belongs to many profile
     public function following()
     {
-        return $this->belongsToMany(Profile::class)->where(
-            'status',
-            'accepted'
-        ); //optional: takes in second parameter (the pivot table name)
+        return $this->belongsToMany(Profile::class)
+            ->where('status', 'accepted')
+            ->with('user'); //optional: takes in second parameter (the pivot table name)
         //if your pivot follows the naming convention (no need to provide)
         //naming convention: alphabetical order + _ (profile_user pivot table name) --> only in many to many relationship
     }

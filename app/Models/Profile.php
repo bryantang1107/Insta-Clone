@@ -25,7 +25,9 @@ class Profile extends Model
     //profile's followers belongs to many user
     public function followers()
     {
-        return $this->belongsToMany(User::class)->where('status', 'accepted');
+        return $this->belongsToMany(User::class)
+            ->where('status', 'accepted')
+            ->with('profile'); //using 'with' == using DB::join
     }
     public function followerRequestList()
     {

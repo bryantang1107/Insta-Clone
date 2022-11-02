@@ -31,6 +31,7 @@ import {
     faHeart,
     faComment,
     faBell,
+    faUser,
 } from "@fortawesome/free-regular-svg-icons";
 import {
     faHeart as faHeartSolid,
@@ -40,6 +41,7 @@ import {
     faSearch,
     faXmark,
     faLock,
+    faCheck,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -52,7 +54,9 @@ library.add(
     faSearch,
     faXmark,
     faLock,
-    faBell
+    faBell,
+    faCheck,
+    faUser
 );
 Vue.component("font-awesome-icon", FontAwesomeIcon);
 

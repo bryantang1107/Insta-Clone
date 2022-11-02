@@ -14,78 +14,57 @@ These routes are loaded by the RouteServiceProvider within a group which
 contains the "web" middleware group. Now create something great!
 */
 
-Route::get('/lmao', function () {
-    return 23;
-});
-
-Auth::routes();
-
-//all these routes follow the restful laravel controllers concept
-
+Auth::routes(); //generate all the routes for user authentication
+Route::view('/about', 'about');
 Route::get('/email', function () {
     return new NewUserWelcomeMail();
 });
 
-Route::get('/', [PostController::class, 'index']);
+Route::controller(PostController::class)->group(function () {
+    Route::get('/', [PostController::class, 'index']);
+    Route::prefix('/p')->group(function () {
+        Route::get('/create', 'create');
+        Route::post('', 'store');
+        Route::get('/{post}', 'show');
+        Route::post('/{post}', 'update'); //update caption
+        Route::delete('/{post}', 'destroy'); //delete post
+    });
+});
+//for route that only returns view, accepts third parameter (data)
 
-//route names should always be unique
-/*
-Why use route names?
-
-Generating URLs...
-$url = route('profile');
- 
-Generating Redirects...
-return redirect()->route('profile');
-
-Generating Navigation (navigate to this route explicitly)
-return to_route('profile');
-
-For route name with parameters, pass in via second parameter:
-$url = route('profile',['id' => 1]);
-*/
-Route::post('/follow/{user}', [FollowsController::class, 'store'])->name(
-    'follow.store'
-);
-
+//Like/Unlike User Post
 Route::post('/likes/{post}', [LikesController::class, 'store']);
 
-Route::get('/profile/{user}', [UserController::class, 'index'])->name(
-    'profile.show'
-);
-Route::delete('/profile/{user}', [UserController::class, 'destroy']);
+Route::controller(UserController::class)->group(function () {
+    Route::prefix('/profile')->group(function () {
+        Route::get('/{user}', 'index'); //get user profile
+        Route::get('/{user}/followers', 'getFollowers'); //get user profile's followers
+        Route::get('/{user}/following', 'getFollowing'); //get user profile's following
+        Route::get('/{user}/edit', 'edit'); //get edit profile view
+        Route::put('/{user}', 'update'); //update user profile
+        Route::delete('/{user}', 'destroy'); //delete account
+    });
+    Route::prefix('/user/activity')->group(function () {
+        Route::get('/follow', 'getActivityFollow');
+        Route::get('/all', 'getActivities');
+    });
+    //Search for user (input)
+    Route::get('/user/{search}', [UserController::class, 'getUser']);
+});
 
-Route::get('/p/create', [PostController::class, 'create'])->name('post.create');
+Route::controller(FollowsController::class)->group(function () {
+    //Follow/Unfollow User
+    Route::post('/follow/{user}', 'store');
+    //Accept or Decline Following Request
+    Route::put('/user/follow', 'update');
+    //Remove Follower
+    Route::delete('/profile/remove/{user}', 'removeFollower');
+});
 
-Route::post('/p', [PostController::class, 'store'])->name('store');
-
-Route::get('/p/{post}', [PostController::class, 'show'])->name('post.show');
-Route::post('/p/{post}', [PostController::class, 'update']); //update caption
-Route::delete('/p/{post}', [PostController::class, 'destroy']); //delete post
-
-Route::get('/profile/{user}/edit', [UserController::class, 'edit'])->name(
-    'profile.edit'
-);
-
-Route::put('/profile/{user}', [UserController::class, 'update'])->name(
-    'profile.update'
-);
-
-// Route::get('/about',function(){
-//     return view('about');
-// });
-
-//for route that only returns view, accepts third parameter (data)
-Route::view('/about', 'about');
-Route::get('/p/comment/{post}', [CommentController::class, 'index']);
-Route::post('/p/comment/{post}', [CommentController::class, 'store']);
-Route::get('/user/activity/follow', [
-    UserController::class,
-    'getActivityFollow',
-]);
-Route::get('/user/activity/all', [UserController::class, 'getActivities']);
-Route::put('/user/follow', [FollowsController::class, 'update']);
-Route::get('/user/{search}', [UserController::class, 'getUser']);
+Route::controller(CommentController::class)->group(function () {
+    Route::get('/p/comment/{post}', 'index');
+    Route::post('/p/comment/{post}', 'store');
+});
 
 /*
 Route::get('/example/{some}/{param}',function($param1, $param2){
@@ -102,7 +81,7 @@ Dependencies- an essential functionality, library or piece of code that's essent
 If your route has dependencies that you would like the Laravel service container to automatically 
 inject into your route's callback/controller, you should list your route parameters after your dependencies:
 
-Route::get('/user/{id}', function (Request $request, $id) {
+Route::get('/user/{id}', function (Request $request (dependency injection), $id (parameters)) {
     return 'User '.$id;
 });*/
 
@@ -163,9 +142,3 @@ Route::get('/search/{search}', function ($search) {
 
 Encoded forward slashes are only supported within the last route segment.
 */
-Auth::routes();
-
-Route::get('/home', [
-    App\Http\Controllers\HomeController::class,
-    'index',
-])->name('home');

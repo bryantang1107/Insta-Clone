@@ -202,7 +202,12 @@ export default {
   methods: {
     async handleFollow(id) {
       try {
-        await axios.post(`/follow/${id}`);
+        await axios.post(`/follow/${id}`, {
+          data: {
+            is_following: this.follow,
+            type: "follow",
+          },
+        });
         this.follow = !this.follow;
       } catch (error) {
         if (error.response.status == 401) return (window.location = "/login");

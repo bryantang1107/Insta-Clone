@@ -163,6 +163,7 @@ export default {
   height: auto;
   max-height: 300px;
   width: 100%;
+  z-index: 10;
 }
 
 /* width */
