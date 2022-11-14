@@ -19,7 +19,7 @@
       <button
         type="button"
         class="btn btn-primary"
-        @click="$emit(label, follower_id)"
+        @click="$emit(label)"
         data-bs-dismiss="modal"
       >
         Confirm
@@ -30,7 +30,7 @@
 
 <script>
 export default {
-  props: ["follower_id", "message", "header", "label"],
+  props: ["message", "header", "label"],
 };
 </script>
 

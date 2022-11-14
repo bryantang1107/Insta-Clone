@@ -140,8 +140,8 @@
                 >
                   <div class="d-flex align-items-center gap-2">
                     <UserProfile
-                      :image="item.image"
-                      :user="item"
+                      :image="item.user.profile.image"
+                      :user="item.user"
                       className="profile-img-comment"
                     ></UserProfile>
                     <p class="d-inline mb-0">{{ item.text }}</p>
@@ -231,9 +231,13 @@ export default {
           comment: this.comment,
         });
         this.comment_list.push({
-          username: this.user.username,
           text: this.comment,
-          image: response.data,
+          user: {
+            username: this.user.username,
+            profile: {
+              image: response.data,
+            },
+          },
         });
         this.comment = "";
         this.$emit("addComment", this.comment_list.length);

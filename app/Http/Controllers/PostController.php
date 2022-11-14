@@ -19,13 +19,12 @@ class PostController extends Controller
     public function index()
     {
         //get all the following users of current user (auth->user)
-
         $users = auth()
             ->user()
-            ->following()
-            ->pluck('profiles.user_id');
+            ->following->pluck('user_id'); //specify the table_name.property to access a specific table property in the RS
+        $users = array_merge($users->toArray(), [auth()->id()]);
         //get only the user id from profile that current user if following
-        if ($users->count() > 0) {
+        if (count($users) > 0) {
             // $posts = \App\Models\Post::where('user_id',$users)->latest()->get(); //chronological order
             //we can do pagination
             $posts = \App\Models\Post::whereIn('user_id', $users)
@@ -104,7 +103,7 @@ class PostController extends Controller
         // \App\Models\Post::create($data);
 
         //redirect to user's profile
-        return redirect('/profile/' . auth()->user()->id);
+        return redirect('/profile/' . auth()->id());
         //or redirect to certain page
         //return redirect()->route('dashboard'); --> this is a named route
     }

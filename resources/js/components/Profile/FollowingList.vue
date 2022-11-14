@@ -9,10 +9,9 @@
     >
       <div class="modal-dialog">
         <Modal
-          :follower_id="user.id"
           v-if="show_modal"
           :message="message"
-          :header="`Unfollow <b>${user.username} ?`"
+          :header="`Unfollow <b>${user.user.username} ?`"
           label="unfollowUser"
           @unfollowUser="unfollowUser"
         ></Modal>
@@ -50,14 +49,14 @@
             <div class="modal-body">
               <Search @searchUsername="searchUsername"></Search>
               <div
-                v-for="(following, index) in filtered_following_list"
+                v-for="(user, index) in filtered_following_list"
                 :key="index"
               >
-                <Following
-                  :following="following"
+                <User
+                  :user="user"
                   :is_user="is_user"
                   @unfollowUser="unfollowFollower"
-                ></Following>
+                ></User>
               </div>
             </div>
             <div class="modal-footer">
@@ -83,13 +82,13 @@
 </template>
 
 <script>
-import Following from "./Following.vue";
+import User from "./User.vue";
 import Modal from "./Modal.vue";
 import Search from "./Search.vue";
 
 export default {
   props: ["following", "user_id", "is_user"],
-  components: { Following, Modal, Search },
+  components: { User, Modal, Search },
   data() {
     return {
       following_list: [],
@@ -103,17 +102,35 @@ export default {
   },
   methods: {
     async getFollowing() {
-      const response = await axios.get(`/profile/${this.user_id}/following`);
-      this.following_list = response.data;
-      this.filtered_following_list = response.data;
+      try {
+        const response = await axios.get(`/profile/${this.user_id}/following`);
+        this.following_list = response.data;
+        this.filtered_following_list = response.data;
+      } catch (error) {
+        this.$toast.open({
+          message: error.message,
+          type: "error",
+          position: "top-right",
+        });
+      }
     },
     unfollowFollower(following, message) {
       this.show_modal = true;
-      this.user = following.user;
+      this.user = following;
       this.message = message;
     },
-    unfollowUser(follower_id) {
-      console.log(follower_id, "emit from modal");
+    async unfollowUser() {
+      try {
+        await axios.post(`/follow/${this.user.user_id}`, {
+          data: {
+            is_following: this.user.is_following,
+            type: "follow",
+          },
+        });
+        window.location.reload();
+      } catch (error) {
+        if (error.response.status == 401) return (window.location = "/login");
+      }
     },
     searchUsername(username) {
       this.username = username;

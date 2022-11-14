@@ -107,9 +107,4 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Post::class); //takes in second parameter (the pivot table name)
     }
-
-    public function activities()
-    {
-        return $this->hasMany(Activity::class);
-    }
 }

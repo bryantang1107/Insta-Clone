@@ -32,7 +32,10 @@
         "
         style="background-color: #cef2d8"
       >
-        <UserProfile :image="activity.image" :user="activity"></UserProfile>
+        <UserProfile
+          :image="activity.user.profile.image"
+          :user="activity"
+        ></UserProfile>
         <p class="m-0 text-dark">{{ activity.message }}</p>
       </a>
       <div
@@ -40,7 +43,10 @@
         :key="index + 'A'"
         v-else
       >
-        <UserProfile :image="activity.image" :user="activity"></UserProfile>
+        <UserProfile
+          :image="activity.user.profile.image"
+          :user="activity"
+        ></UserProfile>
         <p class="m-0">{{ activity.message }}</p>
       </div></template
     >

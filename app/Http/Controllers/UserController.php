@@ -13,6 +13,10 @@ use Illuminate\Support\Facades\Session;
 
 class UserController extends Controller
 {
+    public function __construct(Helper $helper)
+    {
+        $this->helper = $helper;
+    }
     public function index(User $user)
     {
         //view user profile
@@ -75,15 +79,13 @@ class UserController extends Controller
             $imageArray = ['image' => $imagePath];
         }
         $user->profile()->update(array_merge($data, $imageArray ?? []));
-        return redirect('/profile/' . auth()->user()->id);
+        return redirect('/profile/' . auth()->id());
     }
     public function getUser($search)
     {
-        $users = DB::table('users')
-            ->join('profiles', 'users.id', '=', 'profiles.user_id')
+        $users = User::with('profile')
             ->where('username', 'LIKE', "%{$search}%")
             ->orWhere('name', 'LIKE', "%{$search}%")
-            ->select('users.username', 'profiles.image', 'users.id')
             ->get();
         return $users;
     }
@@ -98,51 +100,51 @@ class UserController extends Controller
 
     public function getActivityFollow()
     {
-        $id = auth()->user()->id;
-        return Activity::join('users', 'activities.user_id', '=', 'users.id')
-            ->join('profiles', 'users.id', '=', 'profiles.user_id')
-            ->where('activities.target_user_id', $id)
-            ->where('activities.type', 'request')
-            ->orderBy('activities.type', 'DESC')
-            ->select(
-                'profiles.image',
-                'activities.message',
-                'activities.type',
-                'users.username',
-                'users.id'
-            )
+        $id = auth()->id();
+        return Activity::with('user.profile')
+            ->where('target_user_id', $id)
+            ->where('type', 'request')
             ->orderBy('activities.created_at', 'DESC')
             ->get();
+        // return Activity::join('users', 'activities.user_id', '=', 'users.id')
+        //     ->join('profiles', 'users.id', '=', 'profiles.user_id')
+        //     ->where('activities.target_user_id', $id)
+        //     ->where('activities.type', 'request')
+        //     ->orderBy('activities.type', 'DESC')
+        //     ->select(
+        //         'profiles.image',
+        //         'activities.message',
+        //         'activities.type',
+        //         'users.username',
+        //         'users.id'
+        //     )
+        //     ->orderBy('activities.created_at', 'DESC')
+        //     ->get();
     }
     public function getActivities()
     {
-        $id = auth()->user()->id;
-        return Activity::join('users', 'activities.user_id', '=', 'users.id')
-            ->join('profiles', 'users.id', '=', 'profiles.user_id')
-            ->where('activities.target_user_id', $id)
-            ->where('activities.type', '!=', 'request')
-            ->select(
-                'profiles.image',
-                'activities.message',
-                'activities.type',
-                'users.username',
-                'users.id',
-                'activities.post_id'
-            )
+        $id = auth()->id();
+        return Activity::with('user.profile')
+            ->where('target_user_id', $id)
+            ->where('type', '!=', 'request')
             ->orderBy('activities.created_at', 'DESC')
             ->get();
     }
 
     public function getFollowers(User $user)
     {
-        if (!auth()->user()) {
-            return $user->profile->followers;
-        }
         $followers = $user->profile->followers->pluck('profile');
+        if (!auth()->user()) {
+            foreach ($followers as $index => $follower) {
+                $user_follower = User::find($follower->user_id);
+                if (!empty($user_follower)) {
+                    $followers[$index]['user'] = $user_follower;
+                }
+            }
+            return $followers;
+        }
 
-        $helper = new Helper();
-
-        $data = $helper->getUser($followers);
+        $data = $this->helper->getUser($followers);
         foreach ($data as $index => $item) {
             $user = User::find($item->user_id);
             if (!empty($user)) {
@@ -161,8 +163,7 @@ class UserController extends Controller
             return $user->following;
         }
         $followings = $user->following;
-        $helper = new Helper();
-        $data = $helper->getUser($followings);
+        $data = $this->helper->getUser($followings);
         return $data;
     }
 }

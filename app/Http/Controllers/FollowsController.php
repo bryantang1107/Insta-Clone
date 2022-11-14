@@ -14,14 +14,12 @@ class FollowsController extends Controller
         //every single route in this class will require
         //authorization to be able to access
     }
-    public function store(\App\Models\User $user)
+    public function store(User $user)
     {
         //request/follow private account
-        if (
-            $user->profile->is_private == 1 &&
-            request('data')['type'] == 'request'
-        ) {
-            $activity = Activity::where('user_id', auth()->user()->id)
+        $request_type = request('data')['type'];
+        if ($user->profile->is_private == 1 && $request_type == 'request') {
+            $activity = Activity::where('user_id', auth()->id())
                 ->where('target_user_id', $user->id)
                 ->where('type', 'request')
                 ->first();
@@ -42,25 +40,15 @@ class FollowsController extends Controller
                 ->toggle([$user->profile->id => ['status' => 'pending']]);
         }
         //unfollow private account
-        elseif (
-            $user->profile->is_private == 1 &&
-            request('data')['type'] == 'follow'
-        ) {
+        elseif ($user->profile->is_private == 1 && $request_type == 'follow') {
             if (request('data')['is_following']) {
-                $activity = Activity::where('user_id', auth()->user()->id)
-                    ->where('target_user_id', $user->id)
+                $activity = Activity::whereIn('user_id', [
+                    auth()->id(),
+                    $user->id,
+                ])
+                    ->whereIn('target_user_id', [auth()->id(), $user->id])
                     ->where('type', 'accept')
-                    ->first();
-                $activity2 = Activity::where('user_id', $user->id)
-                    ->where('target_user_id', auth()->user()->id)
-                    ->where('type', 'accept')
-                    ->first();
-                if (!empty($activity)) {
-                    $activity->delete();
-                }
-                if (!empty($activity2)) {
-                    $activity2->delete();
-                }
+                    ->delete();
             }
             return auth()
                 ->user()
@@ -69,7 +57,8 @@ class FollowsController extends Controller
         }
         //follow/unfollow public account
         elseif ($user->profile->is_private == 0) {
-            $activity = Activity::where('user_id', auth()->user()->id)
+            //check
+            $activity = Activity::where('user_id', auth()->id())
                 ->where('type', 'follow')
                 ->first();
             if (!empty($activity)) {
@@ -99,6 +88,7 @@ class FollowsController extends Controller
     {
         $this->authorize('update', auth()->user()->profile);
         $this->authorize('privateAccount', auth()->user()->profile);
+        $user_id = request('data')['user_id'];
         //accept follow request
         if (request('data')['decision'] == 'accept') {
             //tell user, follow accepted
@@ -109,8 +99,8 @@ class FollowsController extends Controller
                 'message' => 'has accepted your follow request!',
             ]);
             //change activity type
-            $activity = Activity::where('target_user_id', auth()->user()->id)
-                ->where('user_id', request('data')['user_id'])
+            $activity = Activity::where('target_user_id', auth()->id())
+                ->where('user_id', $user_id)
                 ->where('type', 'request')
                 ->first();
 
@@ -120,30 +110,32 @@ class FollowsController extends Controller
                 $activity->save();
             }
             return DB::table('profile_user')
-                ->where('user_id', request('data')['user_id'])
+                ->where('user_id', $user_id)
                 ->update([
                     'status' => 'accepted',
                 ]);
         } elseif (request('data')['decision'] == 'decline') {
             //decline follow request
-            $activity = Activity::where('user_id', request('data')['user_id'])
-                ->where('target_user_id', auth()->user()->id)
+            $activity = Activity::where('user_id', $user_id)
+                ->where('target_user_id', auth()->id())
                 ->where('type', 'request')
                 ->first();
             if (!empty($activity)) {
                 $activity->delete();
             }
             //remove pivot table
-            $user = User::find(request('data')['user_id']);
+            $user = User::find($user_id);
             return $user->following()->toggle(auth()->id());
         }
     }
     public function removeFollower(User $user)
     {
-        $this->authorize('update', $user->profile);
+        if (!request('is_user')) {
+            return abort(404);
+        }
         $activities = Activity::whereIn('user_id', [$user->id, auth()->id()])
             ->whereIn('target_user_id', [$user->id, auth()->id()])
-            ->whereIn('type', ['accept'])
+            ->where('type', 'accept')
             ->get();
         foreach ($activities as $activity) {
             $activity->delete();

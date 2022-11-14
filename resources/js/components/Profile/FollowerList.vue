@@ -9,10 +9,9 @@
     >
       <div class="modal-dialog">
         <Modal
-          :follower_id="user.id"
           v-if="show_modal"
           :message="message"
-          :header="`Unfollow <b>${user.username} ?`"
+          :header="`Unfollow <b>${user.user.username} ?`"
           label="unfollowUser"
           @unfollowUser="unfollowUser"
         ></Modal>
@@ -27,10 +26,9 @@
     >
       <div class="modal-dialog">
         <Modal
-          :follower_id="user.id"
           v-if="show_modal"
           :message="message"
-          :header="`Remove <b>${user.username}</b> From Follower List ?`"
+          :header="`Remove <b>${user.user.username}</b> From Follower List ?`"
           label="removeUser"
           @removeUser="removeUser"
         ></Modal>
@@ -66,16 +64,14 @@
             </div>
             <div class="modal-body">
               <Search @searchUsername="searchUsername"></Search>
-              <div
-                v-for="(follower, index) in filtered_follower_list"
-                :key="index"
-              >
-                <Follower
-                  :follower="follower"
+              <div v-for="(user, index) in filtered_follower_list" :key="index">
+                <User
+                  :user="user"
                   :is_user="is_user"
+                  :follower="true"
                   @removeFollower="removeFollower"
                   @unfollowUser="unfollowFollower"
-                ></Follower>
+                ></User>
               </div>
               <div v-if="filtered_follower_list.length < 1">
                 <p class="m-5 text-muted text-center">No username found.</p>
@@ -104,11 +100,11 @@
 </template>
 
 <script>
-import Follower from "./Follower.vue";
+import User from "./User.vue";
 import Modal from "./Modal.vue";
 import Search from "./Search.vue";
 export default {
-  components: { Follower, Modal, Search },
+  components: { User, Modal, Search },
   props: ["followers", "user_id", "is_user"],
   data() {
     return {
@@ -123,30 +119,71 @@ export default {
   },
   methods: {
     async getFollowers() {
-      const response = await axios.get(`/profile/${this.user_id}/followers`);
-      this.follower_list = response.data;
-      this.filtered_follower_list = response.data;
+      try {
+        const response = await axios.get(`/profile/${this.user_id}/followers`);
+        this.follower_list = response.data;
+        this.filtered_follower_list = response.data;
+      } catch (error) {
+        this.$toast.open({
+          message: error.message,
+          type: "error",
+          position: "top-right",
+        });
+      }
     },
     removeFollower(follower, message) {
       this.show_modal = true;
       this.user = follower;
       this.message = message;
     },
-    async removeUser(follower_id) {
-      await axios.delete(`/profile/remove/${follower_id}`);
-      this.follower_list = this.follower_list.filter((follower) => {
-        return follower.id != follower_id;
-      });
-      this.followersInt -= 1;
+    async removeUser() {
+      try {
+        await axios.delete(`/profile/remove/${this.user.user_id}`, {
+          data: {
+            is_user: this.is_user,
+          },
+        });
+        this.follower_list = this.follower_list.filter((follower) => {
+          return follower.id != this.user.user_id;
+        });
+        this.followersInt -= 1;
+        this.$toast.open({
+          message: `Successfully removed ${this.user.user.username} from follower list!`,
+          type: "success",
+          position: "top-right",
+          queue: true,
+        });
+      } catch (error) {
+        this.$toast.open({
+          message: `Unable to remove ${this.user.user.username} from follower list!`,
+          type: "error",
+          position: "top-right",
+        });
+      }
     },
     unfollowFollower(follower, message) {
       this.show_modal = true;
       this.user = follower;
       this.message = message;
     },
-    unfollowUser(follower_id) {
-      //remove user from follower list
-      console.log(follower_id, "emit from modal");
+    async unfollowUser() {
+      //unfollow user (private) from follower list
+      try {
+        await axios.post(`/follow/${this.user.user_id}`, {
+          data: {
+            is_following: this.user.is_following,
+            type: "follow",
+          },
+        });
+        window.location.reload();
+      } catch (error) {
+        if (error.response.status == 401) return (window.location = "/login");
+        this.$toast.open({
+          message: `Unable to remove ${this.user.user.username} from follower list!`,
+          type: error.message,
+          position: "top-right",
+        });
+      }
     },
     searchUsername(username) {
       this.username = username;

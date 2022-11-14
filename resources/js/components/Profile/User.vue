@@ -1,13 +1,13 @@
 <template>
   <div
     class="d-flex align-items-center justify-content-between p-2 rounded-2"
-    :style="{ backgroundColor: follower.is_user ? '#e8f2fa' : '' }"
+    :style="{ backgroundColor: user.is_user ? '#e8f2fa' : '' }"
   >
-    <UserProfile :user="follower.user" :image="follower.image"> </UserProfile>
+    <UserProfile :user="user.user" :image="user.image"> </UserProfile>
     <!-- If profile = auth user and profile not private -->
     <template v-if="!is_user">
-      <template v-if="!follower.is_user">
-        <template v-if="!follower.is_private">
+      <template v-if="!user.is_user">
+        <template v-if="!user.is_private">
           <!-- If following Profile -->
           <div
             v-if="follow"
@@ -17,7 +17,7 @@
             <p class="m-0">Following</p>
             <font-awesome-icon icon="fa-solid fa-check" />
             <ul class="dropdown-menu">
-              <li @click="handleFollow(follower.id)" class="dropdown-item">
+              <li @click="handleFollow(user.user_id)" class="dropdown-item">
                 Unfollow
               </li>
             </ul>
@@ -26,7 +26,7 @@
           <div
             v-else
             class="following-btn p-2 rounded-2 d-flex align-items-center gap-2"
-            @click="handleFollow(follower.id)"
+            @click="handleFollow(user.user_id)"
           >
             Follow
             <font-awesome-icon icon="fa-regular fa-user" />
@@ -50,9 +50,9 @@
                 @click="
                   $emit(
                     'unfollowUser',
-                    follower,
+                    user,
                     `If you change your mind, you'll have to request to follow
-                      <b>${follower.username}</b> again.`
+                      <b>${user.user.username}</b> again.`
                   )
                 "
               >
@@ -64,7 +64,7 @@
           <div
             v-else-if="requested"
             class="following-btn p-2 rounded-2 d-flex align-items-center gap-2"
-            @click="handleFollowPrivate(follower.id)"
+            @click="handleFollowPrivate(user.user_id)"
           >
             Requested
             <font-awesome-icon icon="fa-regular fa-user" />
@@ -73,7 +73,7 @@
           <div
             v-else
             class="following-btn p-2 rounded-2 d-flex align-items-center gap-2"
-            @click="handleFollowPrivate(follower.id)"
+            @click="handleFollowPrivate(user.user_id)"
           >
             Follow
             <font-awesome-icon icon="fa-regular fa-user" />
@@ -83,7 +83,7 @@
     <!-- If profile is auth user  -->
     <template v-else>
       <div class="d-flex align-items-center gap-2">
-        <template v-if="!follower.is_private">
+        <template v-if="!user.is_private">
           <!-- If following Profile -->
           <div
             v-if="follow"
@@ -93,7 +93,7 @@
             <p class="m-0">Following</p>
             <font-awesome-icon icon="fa-solid fa-check" />
             <ul class="dropdown-menu">
-              <li @click="handleFollow(follower.id)" class="dropdown-item">
+              <li @click="handleFollow(user.user_id)" class="dropdown-item">
                 Unfollow
               </li>
             </ul>
@@ -102,7 +102,7 @@
           <div
             v-else
             class="following-btn p-2 rounded-2 d-flex align-items-center gap-2"
-            @click="handleFollow(follower.id)"
+            @click="handleFollow(user.user_id)"
           >
             Follow
             <font-awesome-icon icon="fa-regular fa-user" />
@@ -125,9 +125,9 @@
                 @click="
                   $emit(
                     'unfollowUser',
-                    follower,
+                    user,
                     `If you change your mind, you'll have to request to follow
-                      <b>${follower.username}</b> again.`
+                      <b>${user.user.username}</b> again.`
                   )
                 "
                 class="dropdown-item"
@@ -140,7 +140,7 @@
           <div
             v-else-if="requested"
             class="following-btn p-2 rounded-2 d-flex align-items-center gap-2"
-            @click="handleFollowPrivate(follower.id)"
+            @click="handleFollowPrivate(user.user_id)"
           >
             Requested
             <font-awesome-icon icon="fa-regular fa-user" />
@@ -149,7 +149,7 @@
           <div
             v-else
             class="following-btn p-2 rounded-2 d-flex align-items-center gap-2"
-            @click="handleFollowPrivate(follower.id)"
+            @click="handleFollowPrivate(user.user_id)"
           >
             Follow
             <font-awesome-icon icon="fa-regular fa-user" />
@@ -162,8 +162,8 @@
           @click="
             $emit(
               'removeFollower',
-              follower,
-              `InstaClone won't tell  <b>${follower.username}</b> they have been removed from your followers.`
+              user,
+              `InstaClone won't tell  <b>${user.user.username}</b> they have been removed from your followers.`
             )
           "
         >
@@ -178,18 +178,17 @@
 import UserProfile from "../UserProfile.vue";
 import Modal from "./Modal.vue";
 export default {
-  props: ["follower", "is_user"],
+  props: ["user", "is_user", "follower"],
   components: { UserProfile, Modal },
   data() {
     return {
-      follow: this.follower.is_following,
-      requested: this.follower.is_requested
-        ? this.follower.is_requested
-        : false,
+      follow: this.user.is_following,
+      requested: this.user.is_requested ? this.user.is_requested : false,
     };
   },
   methods: {
     async handleFollow(id) {
+      //follow/unfollow public account
       try {
         await axios.post(`/follow/${id}`, {
           data: {
@@ -198,11 +197,23 @@ export default {
           },
         });
         this.follow = !this.follow;
+        this.$toast.open({
+          message: `You are now following ${this.user.user.username}!`,
+          type: "success",
+          position: "top-right",
+           queue: true,
+        });
       } catch (error) {
         if (error.response.status == 401) return (window.location = "/login");
+        this.$toast.open({
+          message: `Unable to follow ${this.user.user.username}, please try again later!`,
+          type: "error",
+          position: "top-right",
+        });
       }
     },
     async handleFollowPrivate(id) {
+      //request/unrequest follow private account
       try {
         await axios.post(`/follow/${id}`, {
           data: {

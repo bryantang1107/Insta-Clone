@@ -34,7 +34,7 @@
         class="user p-3 d-flex align-items-center gap-3"
         @click="redirect(option.id)"
       >
-        <UserProfile :image="option.image" :user="option"></UserProfile>
+        <UserProfile :image="option.profile.image" :user="option"></UserProfile>
       </div>
     </div>
     <div

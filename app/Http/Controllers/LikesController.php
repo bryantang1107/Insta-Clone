@@ -21,7 +21,7 @@ class LikesController extends Controller
                 ->liking()
                 ->toggle($post);
         }
-        $activity = Activity::where('user_id', auth()->user()->id)
+        $activity = Activity::where('user_id', auth()->id())
             ->where('target_user_id', $post->user_id)
             ->where('post_id', $post->id)
             ->where('type', 'like')

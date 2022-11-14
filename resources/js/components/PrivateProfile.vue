@@ -86,12 +86,25 @@ export default {
         await axios.post(`/follow/${id}`, {
           data: {
             is_following: 0,
-            type: 'request',
+            type: "request",
           },
         });
         this.requested = !this.requested;
+        if (this.requested) {
+          this.$toast.open({
+            message: `Requested to follow ${this.user.username}`,
+            type: "success",
+            position: "top-right",
+            queue: true,
+          });
+        }
       } catch (error) {
         if (error.response.status == 401) return (window.location = "/login");
+        this.$toast.open({
+          message: error.message,
+          type: "error",
+          position: "top-right",
+        });
       }
     },
   },

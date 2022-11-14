@@ -1,18 +1,21 @@
 <template>
   <div class="activity-log rounded-4 p-2 d-flex align-items-center gap-2">
-    <UserProfile :image="activity.image" :user="activity"></UserProfile>
+    <UserProfile
+      :image="activity.user.profile.image"
+      :user="activity"
+    ></UserProfile>
     <template v-if="!is_accept">
       <p class="m-0">{{ activity.message }}</p>
       <div class="d-flex align-items-center" v-if="(activity.type = 'request')">
         <button
           class="btn btn-primary me-2"
-          @click="handleFollowRequest('accept', activity.id)"
+          @click="handleFollowRequest('accept', activity)"
         >
           Accept
         </button>
         <button
           class="btn btn-danger"
-          @click="handleFollowRequest('decline', activity.id)"
+          @click="handleFollowRequest('decline', activity)"
         >
           Decline
         </button>
@@ -35,15 +38,20 @@ export default {
     };
   },
   methods: {
-    async handleFollowRequest(d, user_id) {
+    async handleFollowRequest(d, user) {
       await axios.put("/user/follow", {
         data: {
           decision: d,
-          user_id,
+          user_id: user.id,
         },
       });
       if (d !== "decline") {
         this.is_accept = true;
+        this.$toast.open({
+            message: `${user.username} is now following you!`,
+            type: "success",
+            position: "top-right",
+          });
       } else {
         this.$emit("decline", user_id);
       }

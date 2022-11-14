@@ -17,16 +17,10 @@ class CommentController extends Controller
 
     public function index(Post $post)
     {
-        $all_comments = User::join(
-            'comments',
-            'users.id',
-            '=',
-            'comments.user_id'
-        )
-            ->join('profiles', 'users.id', '=', 'profiles.user_id')
-            ->where('comments.post_id', $post->id)
-            ->get(['users.username', 'comments.text', 'profiles.image']);
-        return $all_comments;
+        //ensure that Comment model has relationship with user
+        return Comment::with('user.profile') //return comment with user + profile
+            ->where('post_id', $post->id)
+            ->get();
     }
     public function store(Post $post)
     {
@@ -35,7 +29,7 @@ class CommentController extends Controller
         ]);
         $post->comments()->create([
             'text' => $data['comment'],
-            'user_id' => auth()->user()->id,
+            'user_id' => auth()->id(),
         ]);
         if (auth()->id() == $post->user_id) {
             return auth()->user()->profile->image;
