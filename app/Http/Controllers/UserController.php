@@ -112,20 +112,6 @@ class UserController extends Controller
             ->where('type', 'request')
             ->orderBy('activities.created_at', 'DESC')
             ->get();
-        // return Activity::join('users', 'activities.user_id', '=', 'users.id')
-        //     ->join('profiles', 'users.id', '=', 'profiles.user_id')
-        //     ->where('activities.target_user_id', $id)
-        //     ->where('activities.type', 'request')
-        //     ->orderBy('activities.type', 'DESC')
-        //     ->select(
-        //         'profiles.image',
-        //         'activities.message',
-        //         'activities.type',
-        //         'users.username',
-        //         'users.id'
-        //     )
-        //     ->orderBy('activities.created_at', 'DESC')
-        //     ->get();
     }
     public function getActivities()
     {

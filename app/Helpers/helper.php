@@ -4,6 +4,7 @@ class Helper
 {
     public function getUser($profiles)
     {
+        //get follower/following
         $data = [];
         foreach ($profiles as $profile) {
             if (auth()->id() == $profile->id) {

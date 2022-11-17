@@ -16,6 +16,7 @@ class FollowsController extends Controller
     }
     public function store(User $user)
     {
+        $this->authorize('updateOtherUser', $user->profile);
         //request/follow private account
         $request_type = request('data')['type'];
         if ($user->profile->is_private == 1 && $request_type == 'request') {
@@ -128,6 +129,15 @@ class FollowsController extends Controller
     }
     public function removeFollower(User $user)
     {
+        if (
+            empty(
+                auth()
+                    ->user()
+                    ->profile->followers->contains($user)
+            )
+        ) {
+            return abort(404);
+        }
         if (!request('is_user')) {
             return abort(404);
         }

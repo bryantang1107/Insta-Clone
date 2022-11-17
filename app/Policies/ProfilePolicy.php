@@ -98,5 +98,16 @@ class ProfilePolicy
     {
         //
     }
-
+    /**
+     * Determine whether the user can update the model.
+     *
+     * @param  \App\Models\User  $user
+     * @param  \App\Models\Profile  $profile
+     * @return \Illuminate\Auth\Access\Response|bool
+     */
+    public function updateOtherUser(User $user, Profile $profile)
+    {
+        //ensure that profile is not self
+        return $user->id !== $profile->user_id;
+    }
 }

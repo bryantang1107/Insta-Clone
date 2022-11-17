@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Post;
 use App\Models\Activity;
 use Illuminate\Http\Request;
 
@@ -13,7 +14,7 @@ class LikesController extends Controller
         //every single route in this class will require
         //authorization to be able to access
     }
-    public function store(\App\Models\Post $post)
+    public function store(Post $post)
     {
         if (auth()->id() == $post->user_id) {
             return auth()

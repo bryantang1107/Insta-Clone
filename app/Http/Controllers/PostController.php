@@ -11,8 +11,6 @@ class PostController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-        //every single route in this class will require
-        //authorization to be able to access
 
         //or we can filter only certain routes to require auth middleware
     }
@@ -56,7 +54,7 @@ class PostController extends Controller
         //without validation
         // $data = request()->all();
         //request('image'); --> to get specific input
-        //for each <input> we need to give it name to be able to access
+        //for each <input> we need to give it name to be able to access (blade)
 
         //or get only specfic request input
         //$request->only('caption');

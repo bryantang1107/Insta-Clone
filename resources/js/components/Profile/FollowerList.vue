@@ -164,14 +164,11 @@ export default {
     },
     async removeUser() {
       try {
-        await axios.delete(
-          `/remove/${this.user.user_id}`,
-          {
-            data: {
-              is_user: this.is_user,
-            },
-          }
-        );
+        await axios.delete(`/remove/${this.user.user_id}`, {
+          data: {
+            is_user: this.is_user,
+          },
+        });
         this.$store.dispatch("removeFollower");
         this.$toast.open({
           message: `Successfully removed ${this.user.user.username} from follower list!`,
