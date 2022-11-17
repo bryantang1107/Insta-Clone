@@ -37,28 +37,30 @@ Route::post('/likes/{post}', [LikesController::class, 'store']);
 
 Route::controller(UserController::class)->group(function () {
     Route::prefix('/profile')->group(function () {
-        Route::get('/{user}', 'index'); //get user profile
-        Route::get('/{user}/followers', 'getFollowers'); //get user profile's followers
-        Route::get('/{user}/following', 'getFollowing'); //get user profile's following
-        Route::get('/{user}/edit', 'edit'); //get edit profile view
-        Route::put('/{user}', 'update'); //update user profile
-        Route::delete('/{user}', 'destroy'); //delete account
+        Route::pattern('user', '[0-9]+');
+        Route::prefix('/{user}')->group(function () {
+            Route::get('/', 'index'); //get user profile
+            Route::get('/followers', 'getFollowers'); //get user profile's followers
+            Route::get('/following', 'getFollowing'); //get user profile's following
+            Route::get('/edit', 'edit'); //get edit profile view
+            Route::put('/', 'update'); //update user profile
+            Route::delete('/', 'destroy'); //delete account
+        });
     });
     Route::prefix('/user/activity')->group(function () {
         Route::get('/follow', 'getActivityFollow');
         Route::get('/all', 'getActivities');
     });
     //Search for user (input)
-    Route::get('/user/{search}', [UserController::class, 'getUser']);
+    Route::get('/user/{search}', 'getUser');
 });
-
 Route::controller(FollowsController::class)->group(function () {
     //Follow/Unfollow User
     Route::post('/follow/{user}', 'store');
     //Accept or Decline Following Request
     Route::put('/user/follow', 'update');
     //Remove Follower
-    Route::delete('/profile/remove/{user}', 'removeFollower');
+    Route::delete('/remove/{user}', 'removeFollower');
 });
 
 Route::controller(CommentController::class)->group(function () {

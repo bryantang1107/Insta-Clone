@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use App\Helpers\Helper;
 use App\Models\Activity;
 use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\Session;
@@ -28,6 +26,7 @@ class UserController extends Controller
             : 0;
         $followerCount = $user->profile->followers->count();
         $followingCount = $user->following->count();
+        $posts = $user->posts()->paginate(9);
         if (auth()->user()) {
             $followRequest = auth()
                 ->user()
@@ -39,13 +38,20 @@ class UserController extends Controller
                     'follows',
                     'followerCount',
                     'followingCount',
-                    'followRequest'
+                    'followRequest',
+                    'posts'
                 )
             );
         } else {
             return view(
                 'profile.home',
-                compact('user', 'follows', 'followerCount', 'followingCount')
+                compact(
+                    'user',
+                    'follows',
+                    'followerCount',
+                    'followingCount',
+                    'posts'
+                )
             );
         }
 

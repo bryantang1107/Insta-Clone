@@ -1,3 +1,6 @@
+@section('title')
+Login
+@endsection
 <x-layout>
     <div class="container" style="z-index: -1; position: absolute">
         <div class="row justify-content-center">

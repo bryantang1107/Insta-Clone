@@ -7,7 +7,7 @@
         <button
           class="btn btn-primary"
           v-if="current != post.user_id && !follow"
-          @click="handleFollow(post.user_id)"
+          @click="handleFollow(post)"
         >
           Follow
         </button>
@@ -200,17 +200,37 @@ export default {
     };
   },
   methods: {
-    async handleFollow(id) {
+    async handleFollow(user) {
       try {
-        await axios.post(`/follow/${id}`, {
+        await axios.post(`/follow/${user.user_id}`, {
           data: {
             is_following: this.follow,
             type: "follow",
           },
         });
+        if (this.follow) {
+          this.$toast.open({
+            message: `You have unfollowed ${user.user.username}!`,
+            type: "error",
+            position: "top-right",
+            queue: true,
+          });
+        } else {
+          this.$toast.open({
+            message: `You are now following ${user.user.username}!`,
+            type: "success",
+            position: "top-right",
+            queue: true,
+          });
+        }
         this.follow = !this.follow;
       } catch (error) {
         if (error.response.status == 401) return (window.location = "/login");
+        this.$toast.open({
+          message: error.message,
+          type: "error",
+          position: "top-right",
+        });
       }
     },
     async handleLike(id, doubleClick = false) {
@@ -239,6 +259,11 @@ export default {
         }
       } catch (error) {
         if (error.response.status == 401) return (window.location = "/login");
+        this.$toast.open({
+          message: error.message,
+          type: "error",
+          position: "top-right",
+        });
       }
     },
     scrollToElement() {
@@ -267,7 +292,12 @@ export default {
         this.post.caption = this.$refs.caption.value;
         this.edit = false;
       } catch (error) {
-        console.log(error);
+        if (error.response.status == 401) return (window.location = "/login");
+        this.$toast.open({
+          message: error.message,
+          type: "error",
+          position: "top-right",
+        });
       }
     },
     async deletePost() {
@@ -275,7 +305,12 @@ export default {
         await axios.delete(`/p/${this.post.id}`);
         window.location = `/profile/${this.user.id}`;
       } catch (error) {
-        console.log(error);
+        if (error.response.status == 401) return (window.location = "/login");
+        this.$toast.open({
+          message: error.message,
+          type: "error",
+          position: "top-right",
+        });
       }
     },
     addComment(length) {

@@ -4,8 +4,8 @@
       <div class="col-3 text-center align-self-center">
         <img
           :src="
-            profile.image
-              ? `/storage/${profile.image}`
+            user.profile.image
+              ? `/storage/${user.profile.image}`
               : 'https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg'
           "
           class="rounded-circle profile-img"
@@ -40,11 +40,11 @@
             <b>Following</b>
           </div>
         </div>
-        <h5>{{ profile.title }}</h5>
+        <h5>{{ user.profile.title }}</h5>
         <p>
-          {{ profile.description }}
+          {{ user.profile.description }}
         </p>
-        <a :href="profile.url">{{ profile.url }}</a>
+        <a :href="user.profile.url">{{ user.profile.url }}</a>
       </div>
     </div>
     <hr class="mt-5" />
@@ -67,7 +67,6 @@ import axios from "axios";
 export default {
   props: [
     "user",
-    "profile",
     "postslength",
     "followercount",
     "followingcount",
@@ -89,15 +88,20 @@ export default {
             type: "request",
           },
         });
-        this.requested = !this.requested;
         if (this.requested) {
           this.$toast.open({
-            message: `Requested to follow ${this.user.username}`,
+            message: `You have removed the request to follow ${this.user.username}`,
+            type: "error",
+            position: "top-right",
+          });
+        } else {
+          this.$toast.open({
+            message: `You have requested to follow ${this.user.username}`,
             type: "success",
             position: "top-right",
-            queue: true,
           });
         }
+        this.requested = !this.requested;
       } catch (error) {
         if (error.response.status == 401) return (window.location = "/login");
         this.$toast.open({

@@ -26,10 +26,10 @@ Make A Post
               @endif
             </div>
             <div class="row">
-              <label for="image" class="col-md-4 col-form-label">
+              <label for="image" class="col-md-4 col-form-label fw-bold">
                 Post Image
               </label>
-              <input type="file" class="form-control-file" id="image" name="image" />
+              <input type="file" class="form-control" id="image" name="image" />
               @if ($errors->has('image'))
               <strong class="mt-3 alert alert-danger">{{ $errors->first('image') }}</strong>
               @endif

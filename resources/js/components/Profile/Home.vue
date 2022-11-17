@@ -5,8 +5,8 @@
       <div class="col-3 text-center align-self-center">
         <img
           :src="
-            profile.image
-              ? `/storage/${profile.image}`
+            user.profile.image
+              ? `/storage/${user.profile.image}`
               : 'https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg'
           "
           class="rounded-circle profile-img"
@@ -20,7 +20,7 @@
             <template v-if="!is_user && user.profile.is_private">
               <button
                 class="btn btn-primary"
-                @click="handleFollow(user.id)"
+                @click="handleFollow(user)"
                 v-if="!follow"
               >
                 Follow
@@ -37,7 +37,7 @@
             <template v-else-if="!is_user">
               <button
                 :class="follow ? 'btn btn-danger' : 'btn btn-primary'"
-                @click="handleFollow(user.id)"
+                @click="handleFollow(user)"
               >
                 {{ follow ? "Unfollow" : "Follow" }}
               </button>
@@ -79,7 +79,7 @@
                     <button
                       type="submit"
                       class="btn btn-danger"
-                      @click="handleFollow(user.id)"
+                      @click="handleFollow(user)"
                     >
                       Confirm
                     </button>
@@ -88,48 +88,36 @@
               </div>
             </div>
           </div>
-
-          <a href="/p/create" v-if="is_user">Make Post</a>
+          <div class="d-flex align-items-center gap-2">
+            <a
+              :href="'/profile/' + user.id + '/edit'"
+              v-if="is_user"
+              class="btn btn-dark"
+            >
+              Edit Profile
+            </a>
+            <a href="/p/create" v-if="is_user" class="btn btn-light">
+              Make Post
+            </a>
+          </div>
         </div>
-        <a
-          :href="'/profile/' + user.id + '/edit'"
-          class="d-block mb-3"
-          v-if="is_user"
-        >
-          Edit Profile
-        </a>
-        <div class="row mb-3">
-          <div class="col-3 d-flex align-items-center gap-2">
+
+        <div class="mb-3 d-flex align-items-center" style="gap: 4em">
+          <div class="d-flex align-items-center gap-2">
             <span>{{ posts.length }}</span>
             <b>Posts</b>
           </div>
-          <FollowerList
-            :followers="followers"
-            :user_id="user.id"
-            :is_user="is_user"
-            class="col-3"
-          ></FollowerList>
-          <FollowingList
-            :following="following"
-            class="col-3"
-            :is_user="is_user"
-            :user_id="user.id"
-          ></FollowingList>
+          <FollowerList :user_id="user.id" :is_user="is_user"></FollowerList>
+          <FollowingList :is_user="is_user" :user_id="user.id"></FollowingList>
         </div>
-        <h5>{{ profile.title }}</h5>
+        <h5>{{ user.profile.title }}</h5>
         <p>
-          {{ profile.description }}
+          {{ user.profile.description }}
         </p>
-        <a :href="profile.url">{{ profile.url }}</a>
+        <a :href="user.profile.url">{{ user.profile.url }}</a>
       </div>
     </div>
-    <div class="row mt-5">
-      <div class="col-4 mt-3 mb-3" v-for="(post, index) in posts" :key="index">
-        <a :href="'/p/' + post.id">
-          <img :src="'/storage/' + post.image" class="post-img" alt="" />
-        </a>
-      </div>
-    </div>
+    <hr />
   </div>
 </template>
 
@@ -139,44 +127,64 @@ const FollowerList = () => import("./FollowerList.vue");
 const FollowingList = () => import("./FollowingList.vue");
 export default {
   components: { FollowerList, FollowingList },
-  props: [
-    "user",
-    "profile",
-    "posts",
-    "canview",
-    "follows",
-    "followercount",
-    "followingcount",
-  ],
+  props: ["user", "posts", "follows", "followercount", "followingcount"],
   data() {
     return {
-      followers: parseInt(this.followercount),
       follow: parseInt(this.follows),
-      following: parseInt(this.followingcount),
-      is_user: this.canview ? true : false,
     };
   },
+  computed: {
+    followers() {
+      return this.$store.getters.getFollow;
+    },
+    following() {
+      return this.$store.getters.getFollowing;
+    },
+    is_user() {
+      return this.$store.getters.getUser.id === this.user.id ? true : false;
+    },
+  },
   methods: {
-    async handleFollow(id) {
+    async handleFollow(user) {
       try {
-        await axios.post(`/follow/${id}`, {
+        await axios.post(`/follow/${user.id}`, {
           data: {
             is_following: this.follow,
             type: "follow",
           },
         });
-        if (this.follow && this.user.profile.is_private) {
+        if (this.follow && user.profile.is_private) {
           window.location.reload();
         } else if (this.follow) {
-          this.followers = parseInt(this.followers) - 1;
+          this.$store.dispatch("unfollowOtherUser");
+          this.$toast.open({
+            message: `You have unfollowed ${user.username}!`,
+            type: "error",
+            position: "top-right",
+            queue: true,
+          });
         } else {
-          this.followers = parseInt(this.followers) + 1;
+          this.$store.dispatch("followOtherUser");
+          this.$toast.open({
+            message: `You are now following ${user.username}!`,
+            type: "success",
+            position: "top-right",
+          });
         }
         this.follow = !this.follow;
       } catch (error) {
         if (error.response.status == 401) return (window.location = "/login");
+        this.$toast.open({
+          message: error.message,
+          type: "error",
+          position: "top-right",
+        });
       }
     },
+  },
+  mounted() {
+    this.$store.dispatch("setFollow", this.followercount);
+    this.$store.dispatch("setFollowing", this.followingcount);
   },
 };
 </script>
@@ -195,20 +203,6 @@ export default {
     rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset, rgba(0, 0, 0, 0.06) 0px 2px 1px,
     rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px,
     rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px;
-}
-
-.post-img {
-  width: 100%;
-  box-shadow: rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset,
-    rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset,
-    rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset, rgba(0, 0, 0, 0.06) 0px 2px 1px,
-    rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px,
-    rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px;
-}
-
-.post-img:hover {
-  transform: translateY(-5px);
-  transition: transform 0.3s ease-in-out;
 }
 
 @media (max-width: 1076px) {

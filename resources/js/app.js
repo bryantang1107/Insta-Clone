@@ -45,6 +45,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import VueToast from "vue-toast-notification";
 import "vue-toast-notification/dist/theme-sugar.css";
+import store from "./store";
 library.add(
     faHeart,
     faHeartSolid,
@@ -63,6 +64,7 @@ Vue.component("font-awesome-icon", FontAwesomeIcon);
 Vue.use(VueToast);
 const app = new Vue({
     el: "#app",
+    store,
     components: {
         "welcome-component": Welcome,
         "home-component": Home,

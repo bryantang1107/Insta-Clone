@@ -17,7 +17,7 @@
             <p class="m-0">Following</p>
             <font-awesome-icon icon="fa-solid fa-check" />
             <ul class="dropdown-menu">
-              <li @click="handleFollow(user.user_id)" class="dropdown-item">
+              <li @click="handleFollow(user)" class="dropdown-item">
                 Unfollow
               </li>
             </ul>
@@ -26,7 +26,7 @@
           <div
             v-else
             class="following-btn p-2 rounded-2 d-flex align-items-center gap-2"
-            @click="handleFollow(user.user_id)"
+            @click="handleFollow(user)"
           >
             Follow
             <font-awesome-icon icon="fa-regular fa-user" />
@@ -64,7 +64,7 @@
           <div
             v-else-if="requested"
             class="following-btn p-2 rounded-2 d-flex align-items-center gap-2"
-            @click="handleFollowPrivate(user.user_id)"
+            @click="handleFollowPrivate(user)"
           >
             Requested
             <font-awesome-icon icon="fa-regular fa-user" />
@@ -73,7 +73,7 @@
           <div
             v-else
             class="following-btn p-2 rounded-2 d-flex align-items-center gap-2"
-            @click="handleFollowPrivate(user.user_id)"
+            @click="handleFollowPrivate(user)"
           >
             Follow
             <font-awesome-icon icon="fa-regular fa-user" />
@@ -85,24 +85,33 @@
       <div class="d-flex align-items-center gap-2">
         <template v-if="!user.is_private">
           <!-- If following Profile -->
-          <div
-            v-if="follow"
-            class="following-btn p-2 rounded-2 d-flex align-items-center gap-2"
-            data-bs-toggle="dropdown"
-          >
-            <p class="m-0">Following</p>
-            <font-awesome-icon icon="fa-solid fa-check" />
+          <div class="dropdown" v-if="follow">
+            <div
+              class="
+                following-btn
+                p-2
+                rounded-2
+                d-flex
+                align-items-center
+                gap-2
+              "
+              data-bs-toggle="dropdown"
+            >
+              <p class="m-0">Following</p>
+              <font-awesome-icon icon="fa-solid fa-check" />
+            </div>
             <ul class="dropdown-menu">
-              <li @click="handleFollow(user.user_id)" class="dropdown-item">
+              <li @click="handleFollow(user)" class="dropdown-item">
                 Unfollow
               </li>
             </ul>
           </div>
+
           <!-- If not following profile -->
           <div
             v-else
             class="following-btn p-2 rounded-2 d-flex align-items-center gap-2"
-            @click="handleFollow(user.user_id)"
+            @click="handleFollow(user)"
           >
             Follow
             <font-awesome-icon icon="fa-regular fa-user" />
@@ -140,7 +149,7 @@
           <div
             v-else-if="requested"
             class="following-btn p-2 rounded-2 d-flex align-items-center gap-2"
-            @click="handleFollowPrivate(user.user_id)"
+            @click="handleFollowPrivate(user)"
           >
             Requested
             <font-awesome-icon icon="fa-regular fa-user" />
@@ -149,13 +158,14 @@
           <div
             v-else
             class="following-btn p-2 rounded-2 d-flex align-items-center gap-2"
-            @click="handleFollowPrivate(user.user_id)"
+            @click="handleFollowPrivate(user)"
           >
             Follow
             <font-awesome-icon icon="fa-regular fa-user" />
           </div>
         </template>
         <button
+          v-if="follower"
           class="btn btn-light"
           data-bs-toggle="modal"
           data-bs-target="#removeUser"
@@ -187,43 +197,75 @@ export default {
     };
   },
   methods: {
-    async handleFollow(id) {
+    async handleFollow(user) {
       //follow/unfollow public account
       try {
-        await axios.post(`/follow/${id}`, {
+        await axios.post(`/follow/${user.user_id}`, {
           data: {
             is_following: this.follow,
             type: "follow",
           },
         });
+        if (this.follow) {
+          this.$toast.open({
+            message: `You have unfollowed ${user.user.username}!`,
+            type: "error",
+            position: "bottom",
+            queue: true,
+          });
+          if (this.is_user) {
+            this.$store.dispatch("unfollowUser");
+          }
+        } else if (!this.follow) {
+          this.$toast.open({
+            message: `You are now following ${user.user.username}!`,
+            type: "success",
+            position: "bottom",
+          });
+          if (this.is_user) {
+            this.$store.dispatch("followUser");
+          }
+        }
         this.follow = !this.follow;
-        this.$toast.open({
-          message: `You are now following ${this.user.user.username}!`,
-          type: "success",
-          position: "top-right",
-           queue: true,
-        });
       } catch (error) {
         if (error.response.status == 401) return (window.location = "/login");
         this.$toast.open({
           message: `Unable to follow ${this.user.user.username}, please try again later!`,
           type: "error",
-          position: "top-right",
+          position: "bottom",
         });
       }
     },
-    async handleFollowPrivate(id) {
+    async handleFollowPrivate(user) {
       //request/unrequest follow private account
       try {
-        await axios.post(`/follow/${id}`, {
+        await axios.post(`/follow/${user.user_id}`, {
           data: {
             is_following: this.follow,
             type: "request",
           },
         });
+        if (this.requested) {
+          this.$toast.open({
+            message: `You have removed the request to follow ${user.user.username}`,
+            type: "error",
+            position: "bottom",
+          });
+        } else {
+          this.$toast.open({
+            message: `You have requested to follow ${user.user.username}`,
+            type: "success",
+            position: "bottom",
+          });
+        }
         this.requested = !this.requested;
       } catch (error) {
         if (error.response.status == 401) return (window.location = "/login");
+        this.$toast.open({
+          message: error.message,
+          type: "error",
+          position: "bottom",
+        });
       }
     },
   },

@@ -18,7 +18,11 @@
       </div>
     </div>
     <div v-if="followingInt > 0">
-      <div data-bs-toggle="modal" data-bs-target="#followingList">
+      <div
+        data-bs-toggle="modal"
+        data-bs-target="#followingList"
+        @click="getFollowing"
+      >
         <div class="follows p-2 rounded-2 d-flex align-items-center gap-2">
           <span>{{ followingInt }}</span>
           <b>Following</b>
@@ -48,16 +52,26 @@
             </div>
             <div class="modal-body">
               <Search @searchUsername="searchUsername"></Search>
-              <div
-                v-for="(user, index) in filtered_following_list"
-                :key="index"
+              <template v-if="isLoading">
+                <cube-spin></cube-spin>
+              </template>
+              <template
+                v-else-if="filtered_following_list.length < 1 && !isLoading"
               >
-                <User
-                  :user="user"
-                  :is_user="is_user"
-                  @unfollowUser="unfollowFollower"
-                ></User>
-              </div>
+                <p class="m-5 text-muted text-center">No username found.</p>
+              </template>
+              <template v-else>
+                <div
+                  v-for="(user, index) in filtered_following_list"
+                  :key="index"
+                >
+                  <User
+                    :user="user"
+                    :is_user="is_user"
+                    @unfollowUser="unfollowFollower"
+                  ></User>
+                </div>
+              </template>
             </div>
             <div class="modal-footer">
               <button
@@ -85,32 +99,42 @@
 import User from "./User.vue";
 import Modal from "./Modal.vue";
 import Search from "./Search.vue";
-
+import CubeSpin from "../Animation/SquareGrid.vue";
 export default {
-  props: ["following", "user_id", "is_user"],
-  components: { User, Modal, Search },
+  props: ["user_id", "is_user"],
+  components: { User, Modal, Search, CubeSpin },
   data() {
     return {
       following_list: [],
-      followingInt: this.following,
       user: null,
       show_modal: false,
       message: null,
       username: null,
       filtered_following_list: [],
+      isLoading: false,
     };
+  },
+  computed: {
+    followingInt() {
+      return this.$store.getters.getFollowing;
+    },
   },
   methods: {
     async getFollowing() {
       try {
+        this.isLoading = true;
         const response = await axios.get(`/profile/${this.user_id}/following`);
-        this.following_list = response.data;
-        this.filtered_following_list = response.data;
+        setTimeout(() => {
+          this.isLoading = false;
+          this.following_list = response.data;
+          this.filtered_following_list = response.data;
+        }, 1500);
       } catch (error) {
+        if (error.response.status == 401) return (window.location = "/login");
         this.$toast.open({
           message: error.message,
           type: "error",
-          position: "top-right",
+          position: "bottom",
         });
       }
     },
@@ -130,6 +154,11 @@ export default {
         window.location.reload();
       } catch (error) {
         if (error.response.status == 401) return (window.location = "/login");
+        this.$toast.open({
+          message: error.message,
+          type: "error",
+          position: "bottom",
+        });
       }
     },
     searchUsername(username) {
@@ -142,9 +171,6 @@ export default {
         return following.user.username.match(value);
       });
     },
-  },
-  mounted() {
-    this.getFollowing();
   },
 };
 </script>

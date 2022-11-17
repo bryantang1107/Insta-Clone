@@ -36,7 +36,11 @@
     </div>
 
     <div v-if="followersInt > 0">
-      <div data-bs-toggle="modal" data-bs-target="#followerList">
+      <div
+        data-bs-toggle="modal"
+        data-bs-target="#followerList"
+        @click="getFollowers"
+      >
         <div class="follows p-2 rounded-2 d-flex align-items-center gap-2">
           <span>{{ followersInt }}</span>
           <b>Followers</b>
@@ -64,18 +68,28 @@
             </div>
             <div class="modal-body">
               <Search @searchUsername="searchUsername"></Search>
-              <div v-for="(user, index) in filtered_follower_list" :key="index">
-                <User
-                  :user="user"
-                  :is_user="is_user"
-                  :follower="true"
-                  @removeFollower="removeFollower"
-                  @unfollowUser="unfollowFollower"
-                ></User>
-              </div>
-              <div v-if="filtered_follower_list.length < 1">
+              <template v-if="isLoading">
+                <cube-spin></cube-spin>
+              </template>
+              <template
+                v-else-if="filtered_follower_list.length < 1 && !isLoading"
+              >
                 <p class="m-5 text-muted text-center">No username found.</p>
-              </div>
+              </template>
+              <template v-else>
+                <div
+                  v-for="(user, index) in filtered_follower_list"
+                  :key="index"
+                >
+                  <User
+                    :user="user"
+                    :is_user="is_user"
+                    :follower="true"
+                    @removeFollower="removeFollower"
+                    @unfollowUser="unfollowFollower"
+                  ></User>
+                </div>
+              </template>
             </div>
             <div class="modal-footer">
               <button
@@ -103,27 +117,39 @@
 import User from "./User.vue";
 import Modal from "./Modal.vue";
 import Search from "./Search.vue";
+import CubeSpin from "../Animation/SquareGrid.vue";
 export default {
-  components: { User, Modal, Search },
-  props: ["followers", "user_id", "is_user"],
+  components: { User, Modal, Search, CubeSpin },
+  props: ["user_id", "is_user"],
   data() {
     return {
       follower_list: [],
-      followersInt: this.followers,
       user: null,
       show_modal: false,
       message: null,
       username: null,
       filtered_follower_list: [],
+      isLoading: false,
     };
+  },
+  //must put reactive state in computed (Vuex)
+  computed: {
+    followersInt() {
+      return this.$store.getters.getFollow;
+    },
   },
   methods: {
     async getFollowers() {
       try {
+        this.isLoading = true;
         const response = await axios.get(`/profile/${this.user_id}/followers`);
-        this.follower_list = response.data;
-        this.filtered_follower_list = response.data;
+        setTimeout(() => {
+          this.isLoading = false;
+          this.follower_list = response.data;
+          this.filtered_follower_list = response.data;
+        }, 1500);
       } catch (error) {
+        if (error.response.status == 401) return (window.location = "/login");
         this.$toast.open({
           message: error.message,
           type: "error",
@@ -138,26 +164,26 @@ export default {
     },
     async removeUser() {
       try {
-        await axios.delete(`/profile/remove/${this.user.user_id}`, {
-          data: {
-            is_user: this.is_user,
-          },
-        });
-        this.follower_list = this.follower_list.filter((follower) => {
-          return follower.id != this.user.user_id;
-        });
-        this.followersInt -= 1;
+        await axios.delete(
+          `/remove/${this.user.user_id}`,
+          {
+            data: {
+              is_user: this.is_user,
+            },
+          }
+        );
+        this.$store.dispatch("removeFollower");
         this.$toast.open({
           message: `Successfully removed ${this.user.user.username} from follower list!`,
           type: "success",
-          position: "top-right",
-          queue: true,
+          position: "bottom",
         });
       } catch (error) {
+        if (error.response.status == 401) return (window.location = "/login");
         this.$toast.open({
           message: `Unable to remove ${this.user.user.username} from follower list!`,
           type: "error",
-          position: "top-right",
+          position: "bottom",
         });
       }
     },
@@ -181,7 +207,7 @@ export default {
         this.$toast.open({
           message: `Unable to remove ${this.user.user.username} from follower list!`,
           type: error.message,
-          position: "top-right",
+          position: "bottom",
         });
       }
     },
@@ -195,9 +221,6 @@ export default {
         return follower.user.username.match(value);
       });
     },
-  },
-  mounted() {
-    this.getFollowers();
   },
 };
 </script>

@@ -3,40 +3,38 @@
 @endsection
 <x-layout>
     <div>
+        @auth
         @can('update', $user->profile)
-        <home-component :user="{{ $user }}" :profile="{{ $user->profile }}" :posts="{{ $user->posts }}"
-            canview="{{ true }}" follows="{{ $follows }}" followercount="{{ $followerCount }}"
-            followingcount="{{ $followingCount }}">
+        <home-component :user="{{ $user }}" :posts="{{ $user->posts }}" follows="{{ $follows }}"
+            followercount="{{ $followerCount }}" followingcount="{{ $followingCount }}">
         </home-component>
+        <x-post :posts="$posts"></x-post>
         @else
         @can('view', $user->profile)
-        <home-component :user="{{ $user }}" :profile="{{ $user->profile }}" :posts="{{ $user->posts }}"
-            canview="{{ false }}" follows="{{ $follows }}" followercount="{{ $user->profile->followers->count() }}"
-            followingcount="{{ $user->following->count() }}">
+        <home-component :user="{{ $user }}" :posts="{{ $user->posts }}" follows="{{ $follows }}"
+            followercount="{{ $followerCount}}" followingcount="{{ $followingCount }}">
         </home-component>
+        <x-post :posts="$posts"></x-post>
         @endcan
         @cannot('view', $user->profile)
-        @auth
-        <private-profile-component :user="{{ $user }}" :profile="{{ $user->profile }}"
-            :postsLength="{{ $user->posts->count() }}" follows="{{ $follows }}"
-            followercount="{{ $user->profile->followers->count() }}" followingcount="{{ $user->following->count() }}"
+        <private-profile-component :user="{{ $user }}" :postsLength="{{ $user->posts->count() }}"
+            follows="{{ $follows }}" followercount="{{ $followerCount }}" followingcount="{{ $followingCount }}"
             followRequest="{{$followRequest}}">
         </private-profile-component>
-        @endauth
         @endcannot
         @endcan
+        @endauth
 
         @guest
         @if ($user->profile->is_private)
-        <private-profile-component :user="{{ $user }}" :profile="{{ $user->profile }}"
-            :postsLength="{{ $user->posts->count() }}" follows="{{ $follows }}"
-            followercount="{{ $user->profile->followers->count() }}" followingcount="{{ $user->following->count() }}">
+        <private-profile-component :user="{{ $user }}" :postsLength="{{ $user->posts->count() }}"
+            followercount="{{ $followerCount }}" followingcount="{{ $followingCount }}">
         </private-profile-component>
         @else
-        <home-component :user="{{ $user }}" :profile="{{ $user->profile }}" :posts="{{ $user->posts }}"
-            canview="{{ false }}" follows="{{ $follows }}" followercount="{{ $user->profile->followers->count() }}"
-            followingcount="{{ $user->following->count() }}">
+        <home-component :user="{{ $user }}" :posts="{{ $user->posts }}" followercount="{{ $followerCount }}"
+            followingcount="{{ $followingCount }}">
         </home-component>
+        <x-post :posts="$posts"></x-post>
         @endif
         @endguest
 

@@ -86,8 +86,6 @@ class FollowsController extends Controller
 
     public function update()
     {
-        $this->authorize('update', auth()->user()->profile);
-        $this->authorize('privateAccount', auth()->user()->profile);
         $user_id = request('data')['user_id'];
         //accept follow request
         if (request('data')['decision'] == 'accept') {

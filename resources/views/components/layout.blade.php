@@ -40,7 +40,7 @@
                                     aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <activity-component></activity-component>
+                                <activity-component :user="{{Auth::user()}}"></activity-component>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Dismiss</button>

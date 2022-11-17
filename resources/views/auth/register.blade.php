@@ -1,3 +1,6 @@
+@section('title')
+Register
+@endsection
 <x-layout>
     <div class="container">
         <div class="row justify-content-center">

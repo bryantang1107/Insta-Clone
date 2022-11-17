@@ -6,6 +6,7 @@
         :key="index"
         :activity="activity"
         @decline="removeActivity"
+        @addFollower="addFollower"
       ></ActivityItem>
     </template>
     <p
@@ -34,7 +35,7 @@
       >
         <UserProfile
           :image="activity.user.profile.image"
-          :user="activity"
+          :user="activity.user"
         ></UserProfile>
         <p class="m-0 text-dark">{{ activity.message }}</p>
       </a>
@@ -45,7 +46,7 @@
       >
         <UserProfile
           :image="activity.user.profile.image"
-          :user="activity"
+          :user="activity.user"
         ></UserProfile>
         <p class="m-0">{{ activity.message }}</p>
       </div></template
@@ -62,6 +63,7 @@ import UserProfile from "../UserProfile.vue";
 import ActivityItem from "../Activity/ActivityItem.vue";
 export default {
   components: { ActivityItem, UserProfile },
+  props: ["user"],
   data() {
     return {
       activity_follow_list: [],
@@ -83,10 +85,16 @@ export default {
         return item.id != user_id;
       });
     },
+    addFollower() {
+      if (`/profile/${this.user.id}` === window.location.pathname) {
+        this.$store.dispatch("followOtherUser");
+      }
+    },
   },
   mounted() {
     this.getActivityFollow();
     this.getActivities();
+    this.$store.dispatch("setUser", this.user);
   },
 };
 </script>

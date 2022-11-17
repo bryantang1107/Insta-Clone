@@ -36,13 +36,6 @@
               <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-3">
                   <UserProfile :user="user" :image="image"></UserProfile>
-                  <button
-                    class="btn btn-primary"
-                    v-if="current != post.user_id && !follow"
-                    @click="handleFollow(post.user_id)"
-                  >
-                    Follow
-                  </button>
                 </div>
                 <div class="dropdown ms-2">
                   <font-awesome-icon
@@ -216,13 +209,23 @@ export default {
       comment_list: [],
     };
   },
+  computed: {
+    currentUser() {
+      return this.$store.getters.getUser;
+    },
+  },
   methods: {
     async getComment() {
       try {
         const response = await axios.get(`/p/comment/${this.post.id}`);
         this.comment_list = response.data;
       } catch (error) {
-        console.log(error);
+        if (error.response.status == 401) return (window.location = "/login");
+        this.$toast.open({
+          message: error.message,
+          type: "error",
+          position: "bottom",
+        });
       }
     },
     async addComment() {
@@ -233,7 +236,7 @@ export default {
         this.comment_list.push({
           text: this.comment,
           user: {
-            username: this.user.username,
+            username: this.currentUser.username,
             profile: {
               image: response.data,
             },
@@ -242,7 +245,12 @@ export default {
         this.comment = "";
         this.$emit("addComment", this.comment_list.length);
       } catch (error) {
-        console.log(error);
+        if (error.response.status == 401) return (window.location = "/login");
+        this.$toast.open({
+          message: error.message,
+          type: "error",
+          position: "bottom",
+        });
       }
     },
   },

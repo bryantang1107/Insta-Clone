@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Post;
 use Illuminate\Support\Facades\DB;
 use Intervention\Image\Facades\Image;
 
@@ -27,7 +28,7 @@ class PostController extends Controller
         if (count($users) > 0) {
             // $posts = \App\Models\Post::where('user_id',$users)->latest()->get(); //chronological order
             //we can do pagination
-            $posts = \App\Models\Post::whereIn('user_id', $users)
+            $posts = Post::whereIn('user_id', $users)
                 ->with('user')
                 ->latest()
                 ->paginate(5);
@@ -114,8 +115,9 @@ class PostController extends Controller
     // }
 
     //RMB
-    public function show(\App\Models\Post $post)
+    public function show(Post $post)
     {
+        $this->authorize('view', $post->user->profile);
         //we can use contains (function offered by collection)
         $follows = auth()->user()
             ? auth()
@@ -146,18 +148,18 @@ class PostController extends Controller
         // ]
     }
 
-    public function update(\App\Models\Post $post)
+    public function update(Post $post)
     {
-        $this->authorize('update', auth()->user()->profile);
+        $this->authorize('update', $post->user->profile);
         $post->update([
             'caption' => request('data')['caption'],
         ]);
         return;
     }
 
-    public function destroy(\App\Models\Post $post)
+    public function destroy(Post $post)
     {
-        $this->authorize('update', auth()->user()->profile);
+        $this->authorize('update', $post->user->profile);
         $post->delete();
         return;
     }
