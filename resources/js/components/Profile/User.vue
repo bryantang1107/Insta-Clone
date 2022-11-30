@@ -46,7 +46,11 @@
               <li
                 class="dropdown-item"
                 data-bs-toggle="modal"
-                data-bs-target="#unfollowUserFromFollowerList"
+                :data-bs-target="
+                  follower
+                    ? '#unfollowUserFromFollowerList'
+                    : '#unfollowUserFromFollowingList'
+                "
                 @click="
                   $emit(
                     'unfollowUser',
@@ -130,7 +134,11 @@
             <ul class="dropdown-menu">
               <li
                 data-bs-toggle="modal"
-                data-bs-target="#unfollowUserFromFollowerList"
+                :data-bs-target="
+                  follower
+                    ? '#unfollowUserFromFollowerList'
+                    : '#unfollowUserFromFollowingList'
+                "
                 @click="
                   $emit(
                     'unfollowUser',

@@ -52,7 +52,7 @@ Route::controller(UserController::class)->group(function () {
         Route::get('/all', 'getActivities');
     });
     //Search for user (input)
-    Route::get('/user/{search}', 'getUser');
+    Route::post('/user/search', 'getUser');
 });
 Route::controller(FollowsController::class)->group(function () {
     //Follow/Unfollow User

@@ -61,6 +61,7 @@ library.add(
     faUser
 );
 Vue.component("font-awesome-icon", FontAwesomeIcon);
+Vue.component("InfiniteLoading", require("vue-infinite-loading"));
 Vue.use(VueToast);
 const app = new Vue({
     el: "#app",

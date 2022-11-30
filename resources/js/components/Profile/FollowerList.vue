@@ -55,8 +55,8 @@
         aria-labelledby="followerListLabel"
         aria-hidden="true"
       >
-        <div class="modal-dialog modal-md">
-          <div class="modal-content">
+        <div class="modal-dialog modal-dialog-scrollable">
+          <div class="modal-content" style="height: 50%">
             <div class="modal-header">
               <h1 class="modal-title fs-5" id="followerListLabel">Followers</h1>
               <button
@@ -89,6 +89,10 @@
                     @unfollowUser="unfollowFollower"
                   ></User>
                 </div>
+                <infinite-loading
+                  @distance="1"
+                  @infinite="handleLoadMore"
+                ></infinite-loading>
               </template>
             </div>
             <div class="modal-footer">
@@ -130,6 +134,7 @@ export default {
       username: null,
       filtered_follower_list: [],
       isLoading: false,
+      page: 1,
     };
   },
   //must put reactive state in computed (Vuex)
@@ -139,15 +144,33 @@ export default {
     },
   },
   methods: {
+    async handleLoadMore($state) {
+      try {
+        this.page = this.page + 1;
+        const response = await axios.get(
+          `/profile/${this.user_id}/followers?page=` + this.page
+        );
+        if (response.data?.length > 0) {
+          this.follower_list = [...this.follower_list, ...response.data];
+          this.filtered_follower_list = this.follower_list;
+        } else {
+          const loader = document.querySelector(".infinite-loading-container");
+          loader.style.display = "none";
+        }
+        $state.loaded();
+      } catch (error) {
+        console.log(error);
+      }
+    },
     async getFollowers() {
       try {
         this.isLoading = true;
+        this.filtered_follower_list = [];
+        this.page = 1;
         const response = await axios.get(`/profile/${this.user_id}/followers`);
-        setTimeout(() => {
-          this.isLoading = false;
-          this.follower_list = response.data;
-          this.filtered_follower_list = response.data;
-        }, 1500);
+        this.isLoading = false;
+        this.follower_list = response.data;
+        this.filtered_follower_list = response.data;
       } catch (error) {
         if (error.response.status == 401) return (window.location = "/login");
         this.$toast.open({
@@ -198,7 +221,13 @@ export default {
             type: "follow",
           },
         });
-        window.location.reload();
+        this.$toast.open({
+          message: `You have unfollowed ${this.user.user.username}!`,
+          type: "error",
+          position: "bottom",
+          queue: true,
+        });
+        this.$store.dispatch("unfollowUser");
       } catch (error) {
         if (error.response.status == 401) return (window.location = "/login");
         this.$toast.open({

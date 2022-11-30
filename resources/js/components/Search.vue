@@ -24,18 +24,27 @@
         v-model="searchUsername"
       />
     </div>
-    <div
-      class="username-list shadow mb-5"
-      v-if="showUserList && options.length > 0"
-    >
-      <div
-        v-for="(option, index) in options"
-        :key="index"
-        class="user p-3 d-flex align-items-center gap-3"
-        @click="redirect(option.id)"
-      >
-        <UserProfile :image="option.profile.image" :user="option"></UserProfile>
-      </div>
+    <div class="username-list shadow mb-5" v-if="showUserList">
+      <template v-if="isLoading">
+        <cube-spin></cube-spin>
+      </template>
+      <template v-if="options.length > 0">
+        <div
+          v-for="(option, index) in options"
+          :key="index"
+          class="user p-3 d-flex align-items-center gap-3"
+          @click="redirect(option.id)"
+        >
+          <UserProfile
+            :image="option.profile.image"
+            :user="option"
+          ></UserProfile>
+        </div>
+        <infinite-loading
+          @distance="1"
+          @infinite="handleLoadMore"
+        ></infinite-loading>
+      </template>
     </div>
     <div
       class="
@@ -47,7 +56,7 @@
         justify-content-center
       "
       style="height: 80px"
-      v-if="showUserList && options.length == 0"
+      v-if="showUserList && options.length == 0 && !isLoading"
     >
       <p class="text-muted">No User Found</p>
     </div>
@@ -57,8 +66,9 @@
 <script>
 import { debounce } from "../helpers/debounce.helper";
 import UserProfile from "./UserProfile.vue";
+import CubeSpin from "./Animation/SquareGrid.vue";
 export default {
-  components: { UserProfile },
+  components: { UserProfile, CubeSpin },
   data() {
     return {
       showIcon: true,
@@ -66,6 +76,9 @@ export default {
       selected: null,
       showUserList: false,
       options: [],
+      username: "",
+      page: 1,
+      isLoading: false,
     };
   },
   methods: {
@@ -80,6 +93,25 @@ export default {
     redirect(user_id) {
       window.location = `${window.location.origin}/profile/${user_id}`;
     },
+    async handleLoadMore($state) {
+      try {
+        this.page = this.page + 1;
+        const response = await axios.post(`/user/search?page=` + this.page, {
+          data: {
+            username: this.username,
+          },
+        });
+        if (response.data.data.length > 0) {
+          this.options = [...this.options, ...response.data.data];
+        } else {
+          const loader = document.querySelector(".infinite-loading-container");
+          loader.style.display = "none";
+        }
+        $state.loaded();
+      } catch (error) {
+        console.log(error);
+      }
+    },
   },
   watch: {
     searchUsername: debounce(async function (newVal) {
@@ -88,8 +120,17 @@ export default {
         this.showUserList = false;
         return;
       }
-      const response = await axios.get(`/user/${newVal}`);
-      this.options = response.data;
+      this.options = [];
+      this.username = newVal;
+      this.page = 1;
+      this.isLoading = true;
+      const response = await axios.post(`/user/search`, {
+        data: {
+          username: newVal,
+        },
+      });
+      this.isLoading = false;
+      this.options = response.data.data;
       this.showUserList = true;
     }, 300),
   },

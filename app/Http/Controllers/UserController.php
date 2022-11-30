@@ -87,12 +87,13 @@ class UserController extends Controller
         $user->profile()->update(array_merge($data, $imageArray ?? []));
         return redirect('/profile/' . auth()->id());
     }
-    public function getUser($search)
+    public function getUser()
     {
+        $search = request('data')['username'];
         $users = User::with('profile')
             ->where('username', 'LIKE', "%{$search}%")
             ->orWhere('name', 'LIKE', "%{$search}%")
-            ->get();
+            ->paginate(5);
         return $users;
     }
 
@@ -125,7 +126,8 @@ class UserController extends Controller
 
     public function getFollowers(User $user)
     {
-        $followers = $user->profile->followers->pluck('profile');
+        $followers = $user->profile->followers()->paginate(5);
+        $followers = $followers->pluck('profile');
         if (!auth()->user()) {
             foreach ($followers as $index => $follower) {
                 $user_follower = User::find($follower->user_id);
@@ -151,10 +153,10 @@ class UserController extends Controller
 
     public function getFollowing(User $user)
     {
+        $followings = $user->following()->paginate(5);
         if (!auth()->user()) {
-            return $user->following;
+            return $followings;
         }
-        $followings = $user->following;
         $data = $this->helper->getUser($followings);
         return $data;
     }

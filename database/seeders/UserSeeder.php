@@ -20,7 +20,7 @@ class UserSeeder extends Seeder
     {
         //
         $faker = Faker::create();
-        foreach (range(1, 5) as $value) {
+        foreach (range(1, 10) as $value) {
             $name = $faker->name();
             $username =
                 strtolower(
@@ -32,7 +32,7 @@ class UserSeeder extends Seeder
                 ) . $faker->unique->numberBetween(1, 1000);
             $email = $faker->email();
             $password = Hash::make(12345678);
-            $user = User::create([
+            User::create([
                 'name' => $name,
                 'username' => $username,
                 'email' => $email,
